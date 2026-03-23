@@ -39,10 +39,3 @@ A comprehensive stock prediction system built with machine learning, featuring a
 - Access the frontend at `http://localhost:5173` (default Vite port)
 - Backend API at `http://localhost:8000`
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make changes and commit
-4. Push to your fork
-5. Create a pull
