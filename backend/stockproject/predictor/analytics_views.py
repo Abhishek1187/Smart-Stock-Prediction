@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 
 from django.core.cache import cache
+from django.db import OperationalError, ProgrammingError
 from django.db.models import Avg
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
@@ -181,10 +182,30 @@ def _get_window_days(request, default=365):
         return default
 
 
+def _missing_table_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return "no such table" in message or "doesn't exist" in message
+
+
+def _schema_not_ready_response(exc: Exception):
+    return Response(
+        {
+            "error": "Database schema is not ready. Run 'python manage.py migrate' from backend/stockproject and restart the server.",
+            "details": str(exc),
+        },
+        status=503,
+    )
+
+
 def _cached_response(cache_key, producer, ttl_seconds=90):
     payload = cache.get(cache_key)
     if payload is None:
-        payload = producer()
+        try:
+            payload = producer()
+        except (OperationalError, ProgrammingError) as exc:
+            if _missing_table_error(exc):
+                return _schema_not_ready_response(exc)
+            raise
         cache.set(cache_key, payload, timeout=ttl_seconds)
     return Response(payload)
 
@@ -414,15 +435,50 @@ def market_overview(request):
         )
 
         latest_market_rows = []
+        missing_metadata = []
+
         for item in metadata:
             latest = _latest_market_snapshot(item["symbol"])
             if latest:
-                merged = {**item, **latest}
-                latest_market_rows.append(merged)
+                latest_market_rows.append({**item, **latest})
+            else:
+                missing_metadata.append(item)
+
+        # Prime symbols that have no snapshot yet so dashboard cards are populated
+        # without forcing users to open each symbol page first.
+        for item in missing_metadata:
+            try:
+                _ensure_symbol_ready(item["symbol"], min_years=1)
+            except Exception:
+                pass
+
+        for item in missing_metadata:
+            latest = _latest_market_snapshot(item["symbol"])
+            if latest:
+                latest_market_rows.append({**item, **latest})
 
         market_rows = [x for x in latest_market_rows if x["asset_type"] == "stock"]
-        gainers = sorted(market_rows, key=lambda x: x.get("return_1d") or -999, reverse=True)[:6]
-        losers = sorted(market_rows, key=lambda x: x.get("return_1d") or 999)[:6]
+        ranked_rows = [x for x in market_rows if x.get("return_1d") is not None]
+
+        gainers = sorted(
+            [x for x in ranked_rows if x.get("return_1d", 0) > 0],
+            key=lambda x: x.get("return_1d"),
+            reverse=True,
+        )[:6]
+
+        losers = sorted(
+            [x for x in ranked_rows if x.get("return_1d", 0) < 0],
+            key=lambda x: x.get("return_1d"),
+        )[:6]
+
+        # Fallback to best/worst ranked rows if one side has no sign-specific rows.
+        if not gainers:
+            gainers = sorted(ranked_rows, key=lambda x: x.get("return_1d"), reverse=True)[:6]
+        if not losers:
+            losers = sorted(ranked_rows, key=lambda x: x.get("return_1d"))[:6]
+
+        gainer_symbols = {row["symbol"] for row in gainers}
+        losers = [row for row in losers if row["symbol"] not in gainer_symbols][:6]
 
         sector_summary = {}
         for row in market_rows:
@@ -431,16 +487,23 @@ def market_overview(request):
 
         sector_perf = []
         for sector, rows in sector_summary.items():
-            avg_1d = sum((r.get("return_1d") or 0) for r in rows) / len(rows)
-            avg_30d = sum((r.get("return_30d") or 0) for r in rows) / len(rows)
-            avg_vol = sum((r.get("volatility_14d") or 0) for r in rows) / len(rows)
+            returns_1d = [r.get("return_1d") for r in rows if r.get("return_1d") is not None]
+            returns_30d = [r.get("return_30d") for r in rows if r.get("return_30d") is not None]
+            vol_14d = [r.get("volatility_14d") for r in rows if r.get("volatility_14d") is not None]
+
+            if not returns_1d:
+                continue
+
+            avg_1d = sum(returns_1d) / len(returns_1d)
+            avg_30d = sum(returns_30d) / len(returns_30d) if returns_30d else None
+            avg_vol = sum(vol_14d) / len(vol_14d) if vol_14d else None
             sector_perf.append(
                 {
                     "sector": sector,
                     "avg_return_1d": avg_1d,
                     "avg_return_30d": avg_30d,
                     "avg_volatility": avg_vol,
-                    "count": len(rows),
+                    "count": len(returns_1d),
                 }
             )
 
@@ -449,6 +512,7 @@ def market_overview(request):
         return {
             "as_of": timezone.now().isoformat(),
             "tickers": metadata,
+            "stocks": market_rows,
             "gainers": gainers,
             "losers": losers,
             "sector_performance": sorted(sector_perf, key=lambda x: x["avg_return_1d"], reverse=True),

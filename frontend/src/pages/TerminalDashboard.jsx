@@ -366,6 +366,9 @@ const TerminalDashboard = () => {
 
   const overviewBySymbol = useMemo(() => {
     const map = {};
+    (overview?.stocks || []).forEach((x) => {
+      map[x.symbol] = x;
+    });
     (overview?.gainers || []).forEach((x) => {
       map[x.symbol] = x;
     });
@@ -396,6 +399,27 @@ const TerminalDashboard = () => {
   }, [sentiment]);
 
   const latestSentiment = sentiment[sentiment.length - 1] || null;
+  const marketMovers = useMemo(() => {
+    const stocks = (overview?.stocks || []).filter((row) => numOrNull(row?.return_1d) !== null);
+    const sortedDesc = [...stocks].sort((a, b) => (numOrNull(b.return_1d) || 0) - (numOrNull(a.return_1d) || 0));
+    const sortedAsc = [...stocks].sort((a, b) => (numOrNull(a.return_1d) || 0) - (numOrNull(b.return_1d) || 0));
+
+    const gainersFromApi = (overview?.gainers || [])
+      .filter((row) => (numOrNull(row?.return_1d) || 0) > 0)
+      .sort((a, b) => (numOrNull(b.return_1d) || 0) - (numOrNull(a.return_1d) || 0));
+
+    const losersFromApi = (overview?.losers || [])
+      .filter((row) => (numOrNull(row?.return_1d) || 0) < 0)
+      .sort((a, b) => (numOrNull(a.return_1d) || 0) - (numOrNull(b.return_1d) || 0));
+
+    const gainers = (gainersFromApi.length ? gainersFromApi : sortedDesc.filter((row) => (numOrNull(row?.return_1d) || 0) > 0)).slice(0, 6);
+    const gainerSymbols = new Set(gainers.map((row) => row.symbol));
+    const losersBase = losersFromApi.length ? losersFromApi : sortedAsc.filter((row) => (numOrNull(row?.return_1d) || 0) < 0);
+    const losers = losersBase.filter((row) => !gainerSymbols.has(row.symbol)).slice(0, 6);
+
+    return { gainers, losers };
+  }, [overview]);
+
   const sentimentPriceAlignment = useMemo(() => {
     const score = numOrNull(latestSentiment?.sentiment_mean) ?? 0;
     const move = numOrNull(selectedOverview?.return_1d) ?? 0;
@@ -760,7 +784,7 @@ const TerminalDashboard = () => {
               <div className="space-y-3">
                 <div>
                   <p className="mb-1 font-mono text-xs uppercase tracking-wide text-terminal-success">Gainers</p>
-                  {(overview?.gainers || []).slice(0, 4).map((g) => (
+                  {(marketMovers.gainers || []).slice(0, 4).map((g) => (
                     <div key={g.symbol} className="flex items-center justify-between py-0.5 text-xs">
                       <span className="font-mono text-terminal-text">{g.symbol}</span>
                       <span className="ticker-positive">{formatPct(g.return_1d)}</span>
@@ -769,7 +793,7 @@ const TerminalDashboard = () => {
                 </div>
                 <div>
                   <p className="mb-1 font-mono text-xs uppercase tracking-wide text-terminal-danger">Losers</p>
-                  {(overview?.losers || []).slice(0, 4).map((g) => (
+                  {(marketMovers.losers || []).slice(0, 4).map((g) => (
                     <div key={g.symbol} className="flex items-center justify-between py-0.5 text-xs">
                       <span className="font-mono text-terminal-text">{g.symbol}</span>
                       <span className="ticker-negative">{formatPct(g.return_1d)}</span>
