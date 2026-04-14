@@ -34,11 +34,29 @@ def add_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
     print(f"[DEBUG] add_technical_indicators called with columns: {df.columns}")
     print(f"[DEBUG] Column types: {df.dtypes}")
     # Ensure lowercase columns
+    df = df.copy()
     df.columns = df.columns.str.lower()
+    # Guard against duplicate columns after lowercasing (e.g., Close + close)
+    if df.columns.duplicated().any():
+        df = df.loc[:, ~df.columns.duplicated(keep="last")]
 
-    df['sma_10'] = df['close'].rolling(window=10).mean()
-    df['ema_9'] = df['close'].ewm(span=9, adjust=False).mean()
-    df['ema_21'] = df['close'].ewm(span=21, adjust=False).mean()
+    required_cols = ["open", "high", "low", "close", "volume"]
+    for col in required_cols:
+        if col not in df.columns:
+            raise ValueError(f"Missing required column for indicators: {col}")
+
+    for col in required_cols:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    df = df.dropna(subset=required_cols)
+
+    close = df['close']
+    high = df['high']
+    low = df['low']
+
+    df['sma_10'] = close.rolling(window=10).mean()
+    df['ema_9'] = close.ewm(span=9, adjust=False).mean()
+    df['ema_21'] = close.ewm(span=21, adjust=False).mean()
 
     def compute_rsi(data, window=14):
         delta = data.diff()
@@ -50,26 +68,26 @@ def add_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
         rsi = 100 - (100 / (1 + rs))
         return pd.Series(rsi)
 
-    df['rsi_14'] = compute_rsi(df['close'], 14)
-    df['ma_20'] = df['close'].rolling(window=20).mean()
-    df['bb_upper'] = df['ma_20'] + 2 * df['close'].rolling(window=20).std()
-    df['bb_lower'] = df['ma_20'] - 2 * df['close'].rolling(window=20).std()
+    df['rsi_14'] = compute_rsi(close, 14)
+    df['ma_20'] = close.rolling(window=20).mean()
+    df['bb_upper'] = df['ma_20'] + 2 * close.rolling(window=20).std()
+    df['bb_lower'] = df['ma_20'] - 2 * close.rolling(window=20).std()
 
-    df['ema_12'] = df['close'].ewm(span=12, adjust=False).mean()
-    df['ema_26'] = df['close'].ewm(span=26, adjust=False).mean()
+    df['ema_12'] = close.ewm(span=12, adjust=False).mean()
+    df['ema_26'] = close.ewm(span=26, adjust=False).mean()
     df['macd'] = df['ema_12'] - df['ema_26']
     df['signal_line'] = df['macd'].ewm(span=9, adjust=False).mean()
 
     # Stochastic Oscillator
-    low_14 = df['low'].rolling(window=14).min()
-    high_14 = df['high'].rolling(window=14).max()
-    df['%k'] = ((df['close'] - low_14) / (high_14 - low_14)) * 100
+    low_14 = low.rolling(window=14).min()
+    high_14 = high.rolling(window=14).max()
+    df['%k'] = ((close - low_14) / (high_14 - low_14)) * 100
     df['%d'] = df['%k'].rolling(window=3).mean()
 
     # ATR
-    hl = df['high'] - df['low']
-    hc = abs(df['high'] - df['close'].shift())
-    lc = abs(df['low'] - df['close'].shift())
+    hl = high - low
+    hc = abs(high - close.shift())
+    lc = abs(low - close.shift())
     tr = pd.concat([hl, hc, lc], axis=1).max(axis=1)
     df['atr_14'] = tr.rolling(window=14).mean()
 

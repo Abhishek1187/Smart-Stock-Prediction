@@ -11,6 +11,15 @@ node_modules
 dist
 dist-ssr
 *.local
+coverage/
+.nyc_output/
+
+# Build and tooling cache
+.cache/
+.eslintcache
+
+# Test outputs
+junit.xml
 
 # Editor directories and files
 .vscode/*

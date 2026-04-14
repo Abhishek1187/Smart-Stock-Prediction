@@ -1,18 +1,13 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Homepage from "./pages/HomePage.jsx";
-import StockPage from "./pages/StockPage.jsx";
-import ModelComparison from "./pages/ModelComparison.jsx";
-
-// Proxy URL to avoid CORS issues for external API calls
-const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import TerminalDashboard from "./pages/TerminalDashboard.jsx";
 
 const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Homepage />} />
-        <Route path="/stock/:symbol" element={<StockPage proxyUrl={proxyUrl} />} />
-        <Route path="/model-comparison" element={<ModelComparison />} />
+        <Route path="/" element={<TerminalDashboard />} />
+        <Route path="/terminal" element={<TerminalDashboard />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

@@ -151,7 +151,7 @@ class AssetAwarePredictor:
             print(f"[ERROR] Failed to load fallback {model_type} model: {str(e)}")
             return None, (None, None)
 
-    def preprocess_data_consistent(self, df, asset_type):
+    def preprocess_data_consistent(self, df, asset_type, news_sentiment_value=None):
         """Consistent preprocessing matching training pipeline"""
         # Convert MultiIndex or ticker-suffixed columns to simple names
         if isinstance(df.columns, pd.MultiIndex):
@@ -171,9 +171,9 @@ class AssetAwarePredictor:
             
         df = df.ffill().bfill()
         
-        # Add news sentiment if missing
-        if 'news_sentiment' not in df.columns:
-            df['news_sentiment'] = 0.0
+        # Inject sentiment context used by the model feature set.
+        sentiment_value = 0.0 if news_sentiment_value is None else float(news_sentiment_value)
+        df['news_sentiment'] = sentiment_value
 
         # Asset-specific volume normalization (matching training)
         if asset_type == "stocks":
@@ -231,7 +231,7 @@ class AssetAwarePredictor:
             X_seq.append(X[i:i + seq_length])
         return np.array(X_seq)
 
-    def predict_price(self, symbol, model_type="transformer", use_daily_data=True):
+    def predict_price(self, symbol, model_type="transformer", use_daily_data=True, news_sentiment_value=None):
         """
         Predict stock price using asset-aware models
         
@@ -273,7 +273,7 @@ class AssetAwarePredictor:
                 }
 
             # Preprocess data consistently with training
-            df = self.preprocess_data_consistent(df, asset_type)
+            df = self.preprocess_data_consistent(df, asset_type, news_sentiment_value=news_sentiment_value)
             if df is None or df.empty:
                 return {
                     "error": "Failed to preprocess data",
@@ -365,13 +365,13 @@ class AssetAwarePredictor:
                 "model_type": model_type
             }
 
-    def compare_models(self, symbol):
+    def compare_models(self, symbol, news_sentiment_value=None):
         """Compare LSTM and Transformer predictions for a symbol with time series data"""
         print(f"\n[INFO] Comparing models for {symbol}")
         
         # Get detailed predictions with time series data
-        lstm_result = self.predict_with_time_series(symbol, "lstm")
-        transformer_result = self.predict_with_time_series(symbol, "transformer")
+        lstm_result = self.predict_with_time_series(symbol, "lstm", news_sentiment_value=news_sentiment_value)
+        transformer_result = self.predict_with_time_series(symbol, "transformer", news_sentiment_value=news_sentiment_value)
         
         return {
             "symbol": symbol,
@@ -388,7 +388,7 @@ class AssetAwarePredictor:
             }
         }
 
-    def predict_with_time_series(self, symbol, model_type="transformer"):
+    def predict_with_time_series(self, symbol, model_type="transformer", news_sentiment_value=None):
         """
         Predict with time series data for charting and metrics calculation
         """
@@ -421,7 +421,7 @@ class AssetAwarePredictor:
                 }
 
             # Preprocess data consistently with training
-            df = self.preprocess_data_consistent(df, asset_type)
+            df = self.preprocess_data_consistent(df, asset_type, news_sentiment_value=news_sentiment_value)
             if df is None or df.empty:
                 return {
                     "error": "Failed to preprocess data",

@@ -1,5 +1,7 @@
 # Core framework
-Django>=4.2
+Django>=5.1,<6.0
+django-cors-headers>=4.2.0
+djangorestframework>=3.14.0
 
 # Machine Learning / Deep Learning
 tensorflow>=2.15.0
@@ -11,15 +13,15 @@ numpy>=1.24.0
 pandas>=2.1.0
 pandas-ta-classic
 yfinance>=0.2.30
-
-# CORS support
-django-cors-headers>=4.2.0
-
-# REST Framework (if you're using APIs)
-djangorestframework>=3.14.0
+python-dateutil>=2.8.2
+pytz>=2023.3
 
 # HTTP requests (optional for APIs, scraping etc.)
 requests>=2.31.0
 
 # NLP / Sentiment Analysis
 textblob>=0.17.1
+
+# Production DB and scheduling
+psycopg2-binary>=2.9.9
+celery>=5.4.0
