@@ -1,7 +1,7 @@
 import requests
 from textblob import TextBlob
 from datetime import datetime, timedelta
-import concurrent.futures
+import time
 import os
 import json
 import sqlite3
@@ -194,26 +194,43 @@ def fetch_news_articles_newsapi(query, from_date=None, to_date=None, language="e
         "sortBy": "relevancy",
     }
 
-    try:
-        response = requests.get(NEWS_API_ENDPOINT, params=params, timeout=5)
-        if response.status_code == 200:
-            data = response.json()
-            articles = data.get("articles", [])
-            print(f"[DEBUG] NewsAPI: {len(articles)} articles for '{query}'")
-            return articles
-        elif response.status_code in (426, 429):
-            print(f"[WARN] NewsAPI returned {response.status_code}; disabling provider for this run")
-            NEWS_API_DISABLED = True
-            return []
-        else:
+    for attempt in range(2):
+        try:
+            response = requests.get(NEWS_API_ENDPOINT, params=params, timeout=8)
+            if response.status_code == 200:
+                data = response.json()
+                articles = data.get("articles", [])
+                print(f"[DEBUG] NewsAPI: {len(articles)} articles for '{query}'")
+                return articles
+
+            if response.status_code in (426, 429):
+                retry_after = response.headers.get("Retry-After")
+                if attempt == 0 and retry_after:
+                    try:
+                        sleep_for = min(60, max(1, int(retry_after)))
+                    except ValueError:
+                        sleep_for = 5
+                    print(f"[WARN] NewsAPI {response.status_code}; retrying after {sleep_for}s")
+                    time.sleep(sleep_for)
+                    continue
+
+                print(f"[WARN] NewsAPI returned {response.status_code}; disabling provider for this run")
+                NEWS_API_DISABLED = True
+                return []
+
             print(f"[WARN] NewsAPI returned {response.status_code}")
             return []
-    except requests.exceptions.Timeout:
-        print(f"[WARN] NewsAPI timeout for '{query}'")
-        return []
-    except Exception as e:
-        print(f"[ERROR] NewsAPI: {e}")
-        return []
+        except requests.exceptions.Timeout:
+            print(f"[WARN] NewsAPI timeout for '{query}'")
+            if attempt == 0:
+                time.sleep(2)
+                continue
+            return []
+        except Exception as e:
+            print(f"[ERROR] NewsAPI: {e}")
+            return []
+
+    return []
 
 def fetch_news_articles_gnews(query, from_date=None, to_date=None, language="en", max_results=10):
     """Fetch from GNews with timeout and error handling"""
@@ -236,26 +253,43 @@ def fetch_news_articles_gnews(query, from_date=None, to_date=None, language="en"
         "to": to_date,
     }
 
-    try:
-        response = requests.get(GNEWS_API_ENDPOINT, params=params, timeout=5)
-        if response.status_code == 200:
-            data = response.json()
-            articles = data.get("articles", [])
-            print(f"[DEBUG] GNews: {len(articles)} articles for '{query}'")
-            return articles
-        elif response.status_code in (426, 429):
-            print(f"[WARN] GNews returned {response.status_code}; disabling provider for this run")
-            GNEWS_API_DISABLED = True
-            return []
-        else:
+    for attempt in range(2):
+        try:
+            response = requests.get(GNEWS_API_ENDPOINT, params=params, timeout=8)
+            if response.status_code == 200:
+                data = response.json()
+                articles = data.get("articles", [])
+                print(f"[DEBUG] GNews: {len(articles)} articles for '{query}'")
+                return articles
+
+            if response.status_code in (426, 429):
+                retry_after = response.headers.get("Retry-After")
+                if attempt == 0 and retry_after:
+                    try:
+                        sleep_for = min(60, max(1, int(retry_after)))
+                    except ValueError:
+                        sleep_for = 5
+                    print(f"[WARN] GNews {response.status_code}; retrying after {sleep_for}s")
+                    time.sleep(sleep_for)
+                    continue
+
+                print(f"[WARN] GNews returned {response.status_code}; disabling provider for this run")
+                GNEWS_API_DISABLED = True
+                return []
+
             print(f"[WARN] GNews returned {response.status_code}")
             return []
-    except requests.exceptions.Timeout:
-        print(f"[WARN] GNews timeout for '{query}'")
-        return []
-    except Exception as e:
-        print(f"[ERROR] GNews: {e}")
-        return []
+        except requests.exceptions.Timeout:
+            print(f"[WARN] GNews timeout for '{query}'")
+            if attempt == 0:
+                time.sleep(2)
+                continue
+            return []
+        except Exception as e:
+            print(f"[ERROR] GNews: {e}")
+            return []
+
+    return []
 
 def analyze_sentiment(text):
     """Analyze sentiment of text using TextBlob"""
@@ -315,22 +349,23 @@ def fetch_news_articles(query, from_date=None, to_date=None, language="en", page
     print(f"[DEBUG] Searching news for: {clean_queries}")
     
     all_articles = []
-    
-    # Fetch from both APIs in parallel for speed
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        futures = []
-        
-        for q in clean_queries[:2]:  # Limit to 2 queries
-            futures.append(executor.submit(fetch_news_articles_newsapi, q, from_date, to_date, language, 10))
-            futures.append(executor.submit(fetch_news_articles_gnews, q, from_date, to_date, language, 10))
-        
-        for future in concurrent.futures.as_completed(futures, timeout=10):
-            try:
-                articles = future.result()
-                if articles:
-                    all_articles.extend(articles)
-            except Exception as e:
-                print(f"[WARN] Future failed: {e}")
+
+    # Fetch sequentially with pacing to reduce provider-side rate limits.
+    for q in clean_queries[:2]:
+        if not NEWS_API_DISABLED:
+            articles = fetch_news_articles_newsapi(q, from_date, to_date, language, 10)
+            if articles:
+                all_articles.extend(articles)
+            time.sleep(0.7)
+
+        if not GNEWS_API_DISABLED:
+            articles = fetch_news_articles_gnews(q, from_date, to_date, language, 10)
+            if articles:
+                all_articles.extend(articles)
+            time.sleep(0.7)
+
+        if NEWS_API_DISABLED and GNEWS_API_DISABLED:
+            break
     
     # Deduplicate by URL
     seen_urls = set()
@@ -395,6 +430,9 @@ def get_daily_sentiment_series(symbol_or_query, start_date, end_date, use_cache=
         cur = start_dt
 
         while cur <= end_dt and windows_used < max_windows:
+            if NEWS_API_DISABLED and GNEWS_API_DISABLED:
+                break
+
             win_start = cur.strftime("%Y-%m-%d")
             win_end_dt = min(cur + timedelta(days=window_days - 1), end_dt)
             win_end = win_end_dt.strftime("%Y-%m-%d")
