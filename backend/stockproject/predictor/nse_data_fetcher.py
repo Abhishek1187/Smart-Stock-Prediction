@@ -11,13 +11,13 @@ class NSEDataFetcher:
         self.backup_base_url = "https://www.alphavantage.co/query"
         self.alpha_vantage_api_key = "OJGSGLAASRO31V80"  
 
-    def fetch_yfinance_data(self, symbol):
+    def fetch_yfinance_data(self, symbol, period="1y"):
         """
         Fetch stock data using yfinance as primary source.
         """
         try:
-            print(f"[INFO] Trying yfinance for: {symbol}")
-            data = yf.download(symbol, period="1y", interval="1d", auto_adjust=False)
+            print(f"[INFO] Trying yfinance for: {symbol} (period={period})")
+            data = yf.download(symbol, period=period, interval="1d", auto_adjust=False)
             if data.empty:
                 raise ValueError("No data returned from yfinance")
             data.reset_index(inplace=True)
@@ -35,7 +35,7 @@ class NSEDataFetcher:
             print(f"[ERROR] yfinance fetch failed: {e}")
             return None
 
-    def fetch_nse_data(self, symbol):
+    def fetch_nse_data(self, symbol, years=1):
         """
         Fetch stock data from NSE India API.
         """
@@ -59,7 +59,7 @@ class NSEDataFetcher:
             time.sleep(1.5) 
 
             to_date = datetime.today()
-            from_date = to_date - timedelta(days=365)
+            from_date = to_date - timedelta(days=max(365, int(365 * years)))
             from_str = from_date.strftime('%d-%m-%Y')
             to_str = to_date.strftime('%d-%m-%Y')
 
@@ -103,19 +103,27 @@ class NSEDataFetcher:
         print("[INFO] Alpha Vantage API fetch removed as per user request.")
         return None
 
-    def fetch_data(self, symbol):
+    def fetch_data(self, symbol, period="1y"):
         """
         Tries yfinance → NSE API in order.
         Returns cleaned DataFrame or None if all fail.
         """
-        print(f"\n[START] Fetching data for: {symbol}")
+        print(f"\n[START] Fetching data for: {symbol} (period={period})")
 
-        df = self.fetch_yfinance_data(symbol)
+        df = self.fetch_yfinance_data(symbol, period=period)
         if df is not None and not df.empty:
             print("[INFO] ✅ Data fetched from yfinance")
             return df
 
-        df = self.fetch_nse_data(symbol)
+        period_year_map = {
+            "1y": 1,
+            "2y": 2,
+            "5y": 5,
+            "10y": 10,
+            "max": 10,
+        }
+        years = period_year_map.get(str(period).lower(), 1)
+        df = self.fetch_nse_data(symbol, years=years)
         if df is not None and not df.empty:
             print("[INFO] ✅ Data fetched from NSE API")
             return df

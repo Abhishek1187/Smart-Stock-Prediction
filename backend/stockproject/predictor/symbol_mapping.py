@@ -1,15 +1,22 @@
 # Mapping from stock symbols to company names for news queries
 symbol_to_company_name = {
-    "RELIANCE.NS": "RELIANCE.NS",
-    "AXISBANK.NS": "AXISBANK.NS",
-    "HDFCBANK.NS": "HDFCBANK.NS",
-    "ONGC.NS": "ONGC.NS",
-    "SBIN.NS": "SBIN.NS",
-    "INFY.NS": "INFY.NS",
-    "ADANIPORTS.NS": "ADANIPORTS.NS",
-    "ADANIENT.NS": "ADANIENT.NS",
-    "BAJFINANCE.NS": "BAJFINANCE.NS",
-    "BHARTIARTL.NS": "BHARTIARTL.NS",
+    "RELIANCE.NS": "Reliance Industries",
+    "AXISBANK.NS": "Axis Bank",
+    "HDFCBANK.NS": "HDFC Bank",
+    "ONGC.NS": "ONGC",
+    "SBIN.NS": "State Bank of India",
+    "INFY.NS": "Infosys",
+    "TCS.NS": "Tata Consultancy Services",
+    "ICICIBANK.NS": "ICICI Bank",
+    "KOTAKBANK.NS": "Kotak Mahindra Bank",
+    "ADANIPORTS.NS": "Adani Ports",
+    "ADANIENT.NS": "Adani Enterprises",
+    "BAJFINANCE.NS": "Bajaj Finance",
+    "BHARTIARTL.NS": "Bharti Airtel",
+    "^NSEI": "NIFTY 50",
+    "^NSEBANK": "NIFTY BANK",
+    "^NSEMDCP50": "NIFTY MIDCAP 50",
+    "^CNXAUTO": "NIFTY AUTO",
     # Add more mappings as needed
 }
 

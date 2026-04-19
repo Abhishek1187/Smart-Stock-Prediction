@@ -13,10 +13,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 try:
     from .utils import add_technical_indicators, fetch_last_60_minutes
     from .nse_data_fetcher import NSEDataFetcher
+    from .news_sentiment import get_daily_sentiment_series
 except ImportError:
     # Fallback for standalone execution
     from utils import add_technical_indicators, fetch_last_60_minutes
     from nse_data_fetcher import NSEDataFetcher
+    from news_sentiment import get_daily_sentiment_series
 
 # Directory and file paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -53,12 +55,12 @@ class AssetAwarePredictor:
             'stocks': {
                 'price_range': (100, 5000),
                 'max_prediction_deviation': 0.3,  # 30% max deviation from current price
-                'sequence_length': 60
+                'sequence_length': 120
             },
             'indices': {
                 'price_range': (10000, 60000), 
                 'max_prediction_deviation': 0.15,  
-                'sequence_length': 60
+                'sequence_length': 120
             }
         }
 
@@ -79,14 +81,25 @@ class AssetAwarePredictor:
         model_filename = f"{model_type}_{asset_type}_{symbol_clean}_model.keras"
         feature_scaler_filename = f"feature_scaler_{asset_type}_{symbol_clean}.pkl"
         target_scaler_filename = f"target_scaler_{asset_type}_{symbol_clean}.pkl"
-        metadata_filename = f"metadata_{asset_type}_{symbol_clean}.json"
+        metadata_filename = f"metadata_{model_type}_{asset_type}_{symbol_clean}.json"
+        legacy_metadata_filename = f"metadata_{asset_type}_{symbol_clean}.json"
         
         return {
             'model': os.path.join(MODEL_DIR, model_filename),
             'feature_scaler': os.path.join(MODEL_DIR, feature_scaler_filename),
             'target_scaler': os.path.join(MODEL_DIR, target_scaler_filename),
-            'metadata': os.path.join(MODEL_DIR, metadata_filename)
+            'metadata': os.path.join(MODEL_DIR, metadata_filename),
+            'legacy_metadata': os.path.join(MODEL_DIR, legacy_metadata_filename)
         }
+
+    def get_sequence_length(self, symbol, model_type, default_seq_len):
+        cache_key = f"{symbol}_{model_type}"
+        metadata = self.metadata_cache.get(cache_key, {})
+        sequence_length = metadata.get('sequence_length', default_seq_len)
+        try:
+            return int(sequence_length)
+        except (TypeError, ValueError):
+            return int(default_seq_len)
 
     def load_asset_model(self, symbol, model_type):
         """Load asset-specific model and scalers"""
@@ -98,16 +111,23 @@ class AssetAwarePredictor:
         paths = self.get_model_paths(symbol, model_type)
         
         try:
-            # Check if asset-specific models exist
-            if all(os.path.exists(path) for path in paths.values()):
+            required_paths = [paths['model'], paths['feature_scaler'], paths['target_scaler']]
+
+            # Check if required model artifacts exist
+            if all(os.path.exists(path) for path in required_paths):
                 print(f"[INFO] Loading asset-specific {model_type} model for {symbol}")
                 
                 model = tf.keras.models.load_model(paths['model'])
                 feature_scaler = joblib.load(paths['feature_scaler'])
                 target_scaler = joblib.load(paths['target_scaler'])
-                
-                with open(paths['metadata'], 'r') as f:
-                    metadata = json.load(f)
+
+                metadata = {}
+                metadata_path = paths['metadata'] if os.path.exists(paths['metadata']) else paths['legacy_metadata']
+                if os.path.exists(metadata_path):
+                    with open(metadata_path, 'r') as f:
+                        metadata = json.load(f)
+                else:
+                    print(f"[WARNING] Metadata file missing for {symbol} {model_type}, using defaults")
                 
                 # Cache the loaded components
                 self.model_cache[cache_key] = model
@@ -151,7 +171,7 @@ class AssetAwarePredictor:
             print(f"[ERROR] Failed to load fallback {model_type} model: {str(e)}")
             return None, (None, None)
 
-    def preprocess_data_consistent(self, df, asset_type, news_sentiment_value=None):
+    def preprocess_data_consistent(self, df, asset_type, symbol, news_sentiment_value=None):
         """Consistent preprocessing matching training pipeline"""
         # Convert MultiIndex or ticker-suffixed columns to simple names
         if isinstance(df.columns, pd.MultiIndex):
@@ -171,9 +191,32 @@ class AssetAwarePredictor:
             
         df = df.ffill().bfill()
         
-        # Inject sentiment context used by the model feature set.
-        sentiment_value = 0.0 if news_sentiment_value is None else float(news_sentiment_value)
-        df['news_sentiment'] = sentiment_value
+        # Build date-aligned sentiment series (consistent with training).
+        if 'date' in df.columns:
+            dates = pd.to_datetime(df['date']).dt.normalize()
+        elif 'datetime' in df.columns:
+            dates = pd.to_datetime(df['datetime']).dt.normalize()
+        elif isinstance(df.index, pd.DatetimeIndex):
+            dates = pd.to_datetime(df.index).normalize()
+        else:
+            dates = None
+
+        if dates is not None:
+            start_date = dates.min().date()
+            end_date = dates.max().date()
+            daily_sentiment = get_daily_sentiment_series(
+                symbol_or_query=symbol,
+                start_date=start_date,
+                end_date=end_date,
+                use_cache=True,
+            )
+            df['news_sentiment'] = dates.strftime('%Y-%m-%d').map(daily_sentiment).fillna(0.0).astype(float)
+        else:
+            df['news_sentiment'] = 0.0
+
+        # Optionally override the latest candle sentiment with fresh runtime sentiment.
+        if news_sentiment_value is not None and len(df) > 0:
+            df.loc[df.index[-1], 'news_sentiment'] = float(news_sentiment_value)
 
         # Asset-specific volume normalization (matching training)
         if asset_type == "stocks":
@@ -273,7 +316,7 @@ class AssetAwarePredictor:
                 }
 
             # Preprocess data consistently with training
-            df = self.preprocess_data_consistent(df, asset_type, news_sentiment_value=news_sentiment_value)
+            df = self.preprocess_data_consistent(df, asset_type, symbol, news_sentiment_value=news_sentiment_value)
             if df is None or df.empty:
                 return {
                     "error": "Failed to preprocess data",
@@ -294,7 +337,7 @@ class AssetAwarePredictor:
             y_scaled = target_scaler.transform(y)
 
             # Create sequences
-            seq_length = config['sequence_length']
+            seq_length = self.get_sequence_length(symbol, model_type, config['sequence_length'])
             X_seq = self.create_sequences(X_scaled, seq_length)
             
             if X_seq.size == 0:
@@ -421,7 +464,7 @@ class AssetAwarePredictor:
                 }
 
             # Preprocess data consistently with training
-            df = self.preprocess_data_consistent(df, asset_type, news_sentiment_value=news_sentiment_value)
+            df = self.preprocess_data_consistent(df, asset_type, symbol, news_sentiment_value=news_sentiment_value)
             if df is None or df.empty:
                 return {
                     "error": "Failed to preprocess data",
@@ -441,7 +484,7 @@ class AssetAwarePredictor:
             y_scaled = target_scaler.transform(y)
 
             # Create sequences for time series prediction
-            seq_length = config['sequence_length']
+            seq_length = self.get_sequence_length(symbol, model_type, config['sequence_length'])
             X_seq, y_seq = [], []
             
             for i in range(len(X_scaled) - seq_length):
@@ -558,7 +601,8 @@ class AssetAwarePredictor:
             
             for model_type in ["lstm", "transformer"]:
                 paths = self.get_model_paths(symbol, model_type)
-                if all(os.path.exists(path) for path in paths.values()):
+                required_paths = [paths['model'], paths['feature_scaler'], paths['target_scaler']]
+                if all(os.path.exists(path) for path in required_paths):
                     symbol_models.append(model_type)
             
             if symbol_models:
