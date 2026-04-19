@@ -17,6 +17,9 @@ NEWS_API_ENDPOINT = "https://newsapi.org/v2/everything"
 GNEWS_API_KEY = os.getenv("GNEWS_API_KEY", "3f95c7a0d831aee6463a767c85c35739")
 GNEWS_API_ENDPOINT = "https://gnews.io/api/v4/search"
 
+NEWS_API_DISABLED = False
+GNEWS_API_DISABLED = False
+
 BASE_DIR = Path(__file__).resolve().parent
 CACHE_DIR = BASE_DIR / "cache" / "sentiment"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -171,6 +174,11 @@ def _load_daily_sentiment_from_db(symbol, start_date, end_date):
 
 def fetch_news_articles_newsapi(query, from_date=None, to_date=None, language="en", page_size=10):
     """Fetch from NewsAPI with timeout and error handling"""
+    global NEWS_API_DISABLED
+
+    if NEWS_API_DISABLED:
+        return []
+
     if not from_date:
         from_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
     if not to_date:
@@ -193,6 +201,10 @@ def fetch_news_articles_newsapi(query, from_date=None, to_date=None, language="e
             articles = data.get("articles", [])
             print(f"[DEBUG] NewsAPI: {len(articles)} articles for '{query}'")
             return articles
+        elif response.status_code in (426, 429):
+            print(f"[WARN] NewsAPI returned {response.status_code}; disabling provider for this run")
+            NEWS_API_DISABLED = True
+            return []
         else:
             print(f"[WARN] NewsAPI returned {response.status_code}")
             return []
@@ -205,6 +217,11 @@ def fetch_news_articles_newsapi(query, from_date=None, to_date=None, language="e
 
 def fetch_news_articles_gnews(query, from_date=None, to_date=None, language="en", max_results=10):
     """Fetch from GNews with timeout and error handling"""
+    global GNEWS_API_DISABLED
+
+    if GNEWS_API_DISABLED:
+        return []
+
     if not from_date:
         from_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%dT00:00:00Z')
     if not to_date:
@@ -226,6 +243,10 @@ def fetch_news_articles_gnews(query, from_date=None, to_date=None, language="en"
             articles = data.get("articles", [])
             print(f"[DEBUG] GNews: {len(articles)} articles for '{query}'")
             return articles
+        elif response.status_code in (426, 429):
+            print(f"[WARN] GNews returned {response.status_code}; disabling provider for this run")
+            GNEWS_API_DISABLED = True
+            return []
         else:
             print(f"[WARN] GNews returned {response.status_code}")
             return []
@@ -360,10 +381,20 @@ def get_daily_sentiment_series(symbol_or_query, start_date, end_date, use_cache=
     if missing_days:
         start_dt = pd.to_datetime(start_iso)
         end_dt = pd.to_datetime(end_iso)
-        window_days = 14
+        total_days = max(1, (end_dt - start_dt).days + 1)
+        if total_days <= 45:
+            window_days = 14
+        elif total_days <= 180:
+            window_days = 30
+        else:
+            window_days = 90
+
+        # Cap API fetch rounds to avoid provider lockouts in long ranges.
+        max_windows = 8
+        windows_used = 0
         cur = start_dt
 
-        while cur <= end_dt:
+        while cur <= end_dt and windows_used < max_windows:
             win_start = cur.strftime("%Y-%m-%d")
             win_end_dt = min(cur + timedelta(days=window_days - 1), end_dt)
             win_end = win_end_dt.strftime("%Y-%m-%d")
@@ -397,6 +428,7 @@ def get_daily_sentiment_series(symbol_or_query, start_date, end_date, use_cache=
                     daily_sentiment[day] = float(sum(scores) / len(scores))
 
             cur = win_end_dt + timedelta(days=1)
+            windows_used += 1
 
     if use_cache:
         _save_cached_daily_sentiment(symbol_or_query, start_iso, end_iso, daily_sentiment)
