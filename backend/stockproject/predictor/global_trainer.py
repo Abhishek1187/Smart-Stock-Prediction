@@ -58,9 +58,9 @@ class GlobalTrainer:
                 'units': [128, 64, 32],  # Deeper architecture
                 'dropout': 0.1,
                 'epochs': 100,
-                'batch_size': 32,
+                'batch_size': 128,
                 'learning_rate': 0.0005,
-                'patience': 20
+                'patience': 10
             },
             'transformer': {
                 'head_size': 32,
@@ -70,7 +70,7 @@ class GlobalTrainer:
                 'epochs': 100,
                 'batch_size': 32,
                 'learning_rate': 0.0005,
-                'patience': 20
+                'patience': 10
             }
         }
         
