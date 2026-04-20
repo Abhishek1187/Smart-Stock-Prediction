@@ -58,7 +58,7 @@ class GlobalTrainer:
                 'units': [128, 64, 32],  # Deeper architecture
                 'dropout': 0.1,
                 'epochs': 100,
-                'batch_size': 64,
+                'batch_size': 32,
                 'learning_rate': 0.0005,
                 'patience': 10
             },

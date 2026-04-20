@@ -235,9 +235,17 @@ class AssetAwareTrainer:
         denom = np.clip(np.abs(actual), 1e-8, None)
         return float(np.mean(np.abs((actual - predicted) / denom)) * 100)
 
-    def _directional_accuracy(self, actual, predicted, previous):
+    def _directional_accuracy(self, actual, predicted, previous, ignore_flat_actual=False):
         actual_dir = np.sign(actual - previous)
         pred_dir = np.sign(predicted - previous)
+
+        if ignore_flat_actual:
+            mask = actual_dir != 0
+            if not np.any(mask):
+                return float("nan")
+            actual_dir = actual_dir[mask]
+            pred_dir = pred_dir[mask]
+
         return float(np.mean(actual_dir == pred_dir) * 100)
 
     def build_lstm_model(self, input_shape, asset_config):
@@ -468,6 +476,12 @@ class AssetAwareTrainer:
         r2 = float(r2_score(actual_prices, test_pred))
         mape = self._safe_mape(actual_prices, test_pred)
         directional_accuracy = self._directional_accuracy(actual_prices, test_pred, prev_prices)
+        directional_accuracy_nonflat = self._directional_accuracy(
+            actual_prices,
+            test_pred,
+            prev_prices,
+            ignore_flat_actual=True,
+        )
 
         # Baseline benchmark: previous close (naive forecast)
         naive_pred = prev_prices
@@ -475,13 +489,25 @@ class AssetAwareTrainer:
         naive_rmse = float(np.sqrt(mean_squared_error(actual_prices, naive_pred)))
         naive_mape = self._safe_mape(actual_prices, naive_pred)
         naive_directional_accuracy = self._directional_accuracy(actual_prices, naive_pred, prev_prices)
+        naive_directional_accuracy_nonflat = self._directional_accuracy(
+            actual_prices,
+            naive_pred,
+            prev_prices,
+            ignore_flat_actual=True,
+        )
+        flat_day_ratio = float(np.mean(np.sign(actual_prices - prev_prices) == 0) * 100)
 
         print(f"[INFO] Test Metrics - MAE: {mae:.2f}, RMSE: {rmse:.2f}, MAPE: {mape:.2f}%, R2: {r2:.4f}")
-        print(f"[INFO] Directional Accuracy: {directional_accuracy:.2f}%")
+        print(
+            f"[INFO] Directional Accuracy (all days): {directional_accuracy:.2f}% | "
+            f"(non-flat days): {directional_accuracy_nonflat:.2f}%"
+        )
         print(
             f"[INFO] Naive Baseline - MAE: {naive_mae:.2f}, RMSE: {naive_rmse:.2f}, "
-            f"MAPE: {naive_mape:.2f}%, Direction: {naive_directional_accuracy:.2f}%"
+            f"MAPE: {naive_mape:.2f}%, Direction(all): {naive_directional_accuracy:.2f}%, "
+            f"Direction(non-flat): {naive_directional_accuracy_nonflat:.2f}%"
         )
+        print(f"[INFO] Flat-day ratio in holdout: {flat_day_ratio:.2f}%")
 
         # Save model and scalers with asset-specific naming
         model_filename = f"{asset_model_key}_model.keras"
@@ -536,11 +562,14 @@ class AssetAwareTrainer:
             'test_mape': float(mape),
             'test_r2': float(r2),
             'test_directional_accuracy': float(directional_accuracy),
+            'test_directional_accuracy_nonflat': float(directional_accuracy_nonflat),
+            'test_flat_day_ratio': float(flat_day_ratio),
             'naive_baseline': {
                 'mae': float(naive_mae),
                 'rmse': float(naive_rmse),
                 'mape': float(naive_mape),
-                'directional_accuracy': float(naive_directional_accuracy)
+                'directional_accuracy': float(naive_directional_accuracy),
+                'directional_accuracy_nonflat': float(naive_directional_accuracy_nonflat),
             },
             'training_history': {
                 'final_loss': float(history.history['loss'][-1]),
@@ -569,12 +598,15 @@ class AssetAwareTrainer:
                         'mape': mape,
                         'r2': r2,
                         'directional_accuracy': directional_accuracy,
+                        'directional_accuracy_nonflat': directional_accuracy_nonflat,
+                        'flat_day_ratio': flat_day_ratio,
                     },
                     'naive_baseline': {
                         'mae': naive_mae,
                         'rmse': naive_rmse,
                         'mape': naive_mape,
                         'directional_accuracy': naive_directional_accuracy,
+                        'directional_accuracy_nonflat': naive_directional_accuracy_nonflat,
                     },
                     'artifacts': {
                         'model_path': model_path,
