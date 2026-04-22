@@ -3,12 +3,15 @@ import sys
 import re
 import json
 import random
+import shutil
+import subprocess
+import time
 import numpy as np
 import pandas as pd
 import joblib
 import tensorflow as tf
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import LSTM, Dense, Dropout, BatchNormalization, Input, LayerNormalization, MultiHeadAttention, Flatten
+from tensorflow.keras.layers import LSTM, Dense, Dropout, BatchNormalization, Input, LayerNormalization, MultiHeadAttention, GlobalAveragePooling1D, Embedding
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
@@ -64,6 +67,11 @@ class AssetAwareTrainer:
                 'split_ratios': {'train': 0.7, 'val': 0.15, 'test': 0.15},
                 'model_params': {
                     'lstm_units': [128, 64, 32],  # Deeper architecture for better learning
+                    'transformer_head_size': 64,
+                    'transformer_num_heads': 8,
+                    'transformer_ff_dim': 256,
+                    'transformer_num_layers': 3,
+                    'transformer_mlp_units': [128, 64],
                     'dropout': 0.1,  # Lower dropout for stocks
                     'epochs': 100,  # More epochs for better convergence
                     'batch_size': 32,  # Larger batch for stability
@@ -80,6 +88,11 @@ class AssetAwareTrainer:
                 'split_ratios': {'train': 0.7, 'val': 0.15, 'test': 0.15},
                 'model_params': {
                     'lstm_units': [128, 64, 32],  # Consistent architecture
+                    'transformer_head_size': 64,
+                    'transformer_num_heads': 8,
+                    'transformer_ff_dim': 256,
+                    'transformer_num_layers': 3,
+                    'transformer_mlp_units': [128, 64],
                     'dropout': 0.15,  # Slightly higher dropout for indices
                     'epochs': 100,  # More epochs for indices
                     'batch_size': 32,  # Larger batch for indices
@@ -103,6 +116,117 @@ class AssetAwareTrainer:
         except Exception:
             pass
         print(f"[INFO] Deterministic seed configured: {seed}")
+
+    def _find_nvidia_smi(self):
+        """Locate nvidia-smi if present on host machine."""
+        in_path = shutil.which("nvidia-smi")
+        if in_path:
+            return in_path
+
+        candidate_paths = [
+            r"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi.exe",
+            r"C:\Windows\System32\nvidia-smi.exe",
+        ]
+        for p in candidate_paths:
+            if os.path.exists(p):
+                return p
+        return None
+
+    def _query_nvidia_smi(self):
+        """Return best-effort GPU telemetry from nvidia-smi."""
+        nvidia_smi = self._find_nvidia_smi()
+        if not nvidia_smi:
+            return {
+                'available': False,
+                'reason': 'nvidia_smi_not_found',
+                'gpus': [],
+            }
+
+        try:
+            cmd = [
+                nvidia_smi,
+                "--query-gpu=name,driver_version,memory.total,memory.used,utilization.gpu",
+                "--format=csv,noheader,nounits",
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+            if result.returncode != 0:
+                return {
+                    'available': False,
+                    'reason': f'nvidia_smi_error:{result.stderr.strip()}',
+                    'gpus': [],
+                }
+
+            gpus = []
+            for line in result.stdout.strip().splitlines():
+                parts = [p.strip() for p in line.split(',')]
+                if len(parts) != 5:
+                    continue
+                gpus.append({
+                    'name': parts[0],
+                    'driver_version': parts[1],
+                    'memory_total_mb': float(parts[2]),
+                    'memory_used_mb': float(parts[3]),
+                    'utilization_gpu_percent': float(parts[4]),
+                })
+
+            return {
+                'available': True,
+                'reason': 'ok',
+                'gpus': gpus,
+                'path': nvidia_smi,
+            }
+        except Exception as exc:
+            return {
+                'available': False,
+                'reason': f'exception:{exc}',
+                'gpus': [],
+            }
+
+    def ensure_gpu_ready(self, require_gpu=True):
+        """
+        Detect and configure TensorFlow GPU runtime.
+        If require_gpu=True, raises RuntimeError when no GPU is available.
+        """
+        tf_gpus = tf.config.list_physical_devices('GPU')
+        gpu_names = [gpu.name for gpu in tf_gpus]
+
+        for gpu in tf_gpus:
+            try:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            except Exception:
+                # Memory growth might already be configured; continue.
+                pass
+
+        try:
+            from tensorflow.keras import mixed_precision
+            if tf_gpus:
+                mixed_precision.set_global_policy('mixed_float16')
+                mixed_precision_policy = 'mixed_float16'
+            else:
+                mixed_precision_policy = 'float32'
+        except Exception:
+            mixed_precision_policy = 'unknown'
+
+        smi_info = self._query_nvidia_smi()
+
+        status = {
+            'tf_built_with_cuda': bool(tf.test.is_built_with_cuda()),
+            'tf_visible_gpu_count': int(len(tf_gpus)),
+            'tf_visible_gpus': gpu_names,
+            'mixed_precision_policy': mixed_precision_policy,
+            'nvidia_smi': smi_info,
+        }
+
+        print("[INFO] GPU preflight status:")
+        print(json.dumps(status, indent=2))
+
+        if require_gpu and len(tf_gpus) == 0:
+            raise RuntimeError(
+                "GPU is required for this training run but TensorFlow detected no GPU. "
+                "Install compatible NVIDIA driver + CUDA/cuDNN runtime and run again."
+            )
+
+        return status
 
     def _extract_dates(self, df):
         if 'date' in df.columns:
@@ -272,6 +396,33 @@ class AssetAwareTrainer:
         model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
         return model
 
+    class TrainingEtaCallback(tf.keras.callbacks.Callback):
+        """Print epoch-level elapsed time and estimated remaining time."""
+
+        def __init__(self, total_epochs):
+            super().__init__()
+            self.total_epochs = int(total_epochs)
+            self._start_time = None
+
+        def on_train_begin(self, logs=None):
+            self._start_time = time.time()
+
+        def on_epoch_end(self, epoch, logs=None):
+            if self._start_time is None:
+                return
+
+            done = epoch + 1
+            elapsed = time.time() - self._start_time
+            avg_per_epoch = elapsed / max(done, 1)
+            remaining = max(self.total_epochs - done, 0) * avg_per_epoch
+
+            elapsed_min = elapsed / 60.0
+            remaining_min = remaining / 60.0
+            print(
+                f"[ETA] Epoch {done}/{self.total_epochs} | "
+                f"elapsed={elapsed_min:.2f}m | est_remaining={remaining_min:.2f}m"
+            )
+
     def warm_start_from_global_lstm(self, model):
         """Warm start per-symbol LSTM using compatible layers from global LSTM."""
         global_model_path = os.path.join(MODEL_DIR, "global_lstm_model.keras")
@@ -305,14 +456,14 @@ class AssetAwareTrainer:
             print(f"[WARNING] Failed to warm start from global LSTM: {exc}")
             return False
 
-    def transformer_encoder(self, inputs, head_size=32, num_heads=2, ff_dim=64, dropout=0.1):
+    def transformer_encoder(self, inputs, head_size=64, num_heads=8, ff_dim=256, dropout=0.1):
         """Transformer encoder block"""
         x = MultiHeadAttention(key_dim=head_size, num_heads=num_heads, dropout=dropout)(inputs, inputs)
         x = Dropout(dropout)(x)
         x = LayerNormalization(epsilon=1e-6)(x)
         res = x + inputs
 
-        x = Dense(ff_dim, activation="relu")(res)
+        x = Dense(ff_dim, activation="gelu")(res)
         x = Dropout(dropout)(x)
         x = Dense(inputs.shape[-1])(x)
         x = LayerNormalization(epsilon=1e-6)(x)
@@ -325,26 +476,43 @@ class AssetAwareTrainer:
         # Create optimizer with asset-specific learning rate
         optimizer = tf.keras.optimizers.Adam(learning_rate=params['learning_rate'])
         
+        seq_len = input_shape[0]
+        feature_dim = input_shape[1]
+
         inputs = Input(shape=input_shape)
-        x = inputs
-        
-        # Single transformer layer for simplicity
-        x = self.transformer_encoder(x, dropout=params['dropout'])
-        
-        x = Flatten()(x)
-        x = Dense(32, activation="relu")(x)
-        x = Dropout(params['dropout'])(x)
-        x = Dense(16, activation="relu")(x)
-        x = Dropout(params['dropout'] / 2)(x)
+
+        # Learnable positional embedding improves sequence order awareness.
+        position_ids = tf.range(start=0, limit=seq_len, delta=1)
+        position_embeddings = Embedding(input_dim=seq_len, output_dim=feature_dim)(position_ids)
+        x = inputs + position_embeddings
+
+        for _ in range(int(params['transformer_num_layers'])):
+            x = self.transformer_encoder(
+                x,
+                head_size=int(params['transformer_head_size']),
+                num_heads=int(params['transformer_num_heads']),
+                ff_dim=int(params['transformer_ff_dim']),
+                dropout=float(params['dropout']),
+            )
+
+        x = GlobalAveragePooling1D()(x)
+
+        for units in params.get('transformer_mlp_units', [128, 64]):
+            x = Dense(int(units), activation="gelu")(x)
+            x = Dropout(params['dropout'])(x)
+
         outputs = Dense(1)(x)
         
         model = Model(inputs, outputs)
         model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
         return model
 
-    def train_asset_specific_model(self, symbol, model_type="lstm", history_period=None, sequence_length=None, init_from_global=False):
+    def train_asset_specific_model(self, symbol, model_type="lstm", history_period=None, sequence_length=None, init_from_global=False, require_gpu=False):
         """Train asset-specific model with proper validation"""
         print(f"\n[INFO] Training {model_type.upper()} model for {symbol}")
+
+        # Optional strict GPU gate for production training on GPU-enabled systems.
+        self.ensure_gpu_ready(require_gpu=require_gpu)
         
         # Get asset configuration
         asset_config, asset_type = self.get_asset_config(symbol)
@@ -452,6 +620,7 @@ class AssetAwareTrainer:
             save_weights_only=False,
             verbose=1,
         )
+        eta_callback = self.TrainingEtaCallback(total_epochs=params['epochs'])
         print(f"[INFO] Starting training with {params['epochs']} epochs...")
         
         history = model.fit(
@@ -459,7 +628,8 @@ class AssetAwareTrainer:
             epochs=params['epochs'],
             batch_size=params['batch_size'],
             validation_data=(X_val_seq, y_val_seq),
-            callbacks=[early_stop, reduce_lr, checkpoint],
+            callbacks=[early_stop, reduce_lr, checkpoint, eta_callback],
+            shuffle=False,
             verbose=1
         )
 
@@ -669,6 +839,7 @@ if __name__ == "__main__":
     parser.add_argument("--seq-len", type=int, default=None, help="Override sequence length")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducible training")
     parser.add_argument("--init-from-global", action="store_true", help="Warm start LSTM from global pretrained model")
+    parser.add_argument("--require-gpu", action="store_true", help="Abort run if TensorFlow cannot detect a GPU")
     
     args = parser.parse_args()
     
@@ -689,6 +860,7 @@ if __name__ == "__main__":
                 history_period=args.period,
                 sequence_length=args.seq_len,
                 init_from_global=args.init_from_global,
+                require_gpu=args.require_gpu,
             )
         if args.model in ["transformer", "both"]:
             trainer.train_asset_specific_model(
@@ -697,6 +869,7 @@ if __name__ == "__main__":
                 history_period=args.period,
                 sequence_length=args.seq_len,
                 init_from_global=False,
+                require_gpu=args.require_gpu,
             )
     else:
         print("Please specify --symbol or --all flag")
