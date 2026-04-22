@@ -1,0 +1,27 @@
+{
+  "symbol": "^NSEBANK",
+  "model_type": "lstm",
+  "asset_type": "indices",
+  "metrics": {
+    "mae": 4874.082479508197,
+    "rmse": 5170.909701503412,
+    "mape": 8.398615772609217,
+    "r2": -3.48436239762464,
+    "directional_accuracy": 44.26229508196721,
+    "directional_accuracy_nonflat": 44.26229508196721,
+    "flat_day_ratio": 0.0
+  },
+  "naive_baseline": {
+    "mae": 391.8786074112022,
+    "rmse": 581.5842434047285,
+    "mape": 0.6954673617839506,
+    "directional_accuracy": 0.0,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_indices_INDEX_NSEBANK_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_indices_INDEX_NSEBANK_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_lstm_indices_INDEX_NSEBANK.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_lstm_indices_INDEX_NSEBANK.json"
+  }
+}

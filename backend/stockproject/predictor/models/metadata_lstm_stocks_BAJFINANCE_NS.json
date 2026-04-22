@@ -1,0 +1,44 @@
+{
+  "symbol": "BAJFINANCE.NS",
+  "asset_type": "stocks",
+  "model_type": "lstm",
+  "training_data_points": 1217,
+  "history_period": "5y",
+  "sequence_length": 120,
+  "seed": 42,
+  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_BAJFINANCE_NS_best.keras",
+  "split": {
+    "train_end_index": 851,
+    "val_end_index": 1034,
+    "train_sequences": 731,
+    "val_sequences": 183,
+    "test_sequences": 183
+  },
+  "price_range": [
+    528.3900146484375,
+    1094.1500244140625
+  ],
+  "scaled_range": [
+    0.10000000000000009,
+    0.9000000000000001
+  ],
+  "test_mae": 163.6068168598446,
+  "test_rmse": 177.34829266676985,
+  "test_mape": 16.544704927381922,
+  "test_r2": -6.051690849079618,
+  "test_directional_accuracy": 46.44808743169399,
+  "test_directional_accuracy_nonflat": 46.96132596685083,
+  "test_flat_day_ratio": 1.092896174863388,
+  "naive_baseline": {
+    "mae": 12.992896241568477,
+    "rmse": 18.209207214620573,
+    "mape": 1.369451342136845,
+    "directional_accuracy": 1.092896174863388,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "training_history": {
+    "final_loss": 0.009227982722222805,
+    "final_val_loss": 0.08114632964134216,
+    "best_val_loss": 0.060521069914102554
+  }
+}

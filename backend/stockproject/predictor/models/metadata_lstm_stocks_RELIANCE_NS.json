@@ -1,0 +1,44 @@
+{
+  "symbol": "RELIANCE.NS",
+  "asset_type": "stocks",
+  "model_type": "lstm",
+  "training_data_points": 1217,
+  "history_period": "5y",
+  "sequence_length": 120,
+  "seed": 42,
+  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_RELIANCE_NS_best.keras",
+  "split": {
+    "train_end_index": 851,
+    "val_end_index": 1034,
+    "train_sequences": 731,
+    "val_sequences": 183,
+    "test_sequences": 183
+  },
+  "price_range": [
+    905.993408203125,
+    1600.9000244140625
+  ],
+  "scaled_range": [
+    0.09999999999999998,
+    0.9
+  ],
+  "test_mae": 48.27896735186134,
+  "test_rmse": 62.02414382880965,
+  "test_mape": 3.2925708201250505,
+  "test_r2": 0.21496625645136436,
+  "test_directional_accuracy": 48.08743169398907,
+  "test_directional_accuracy_nonflat": 48.61878453038674,
+  "test_flat_day_ratio": 1.092896174863388,
+  "naive_baseline": {
+    "mae": 13.046441416922814,
+    "rmse": 17.933619634558845,
+    "mape": 0.9162189003614435,
+    "directional_accuracy": 1.092896174863388,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "training_history": {
+    "final_loss": 0.01126430369913578,
+    "final_val_loss": 0.010774583555758,
+    "best_val_loss": 0.007285894360393286
+  }
+}

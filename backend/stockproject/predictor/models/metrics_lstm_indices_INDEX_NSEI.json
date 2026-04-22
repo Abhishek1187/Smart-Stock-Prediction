@@ -1,0 +1,27 @@
+{
+  "symbol": "^NSEI",
+  "model_type": "lstm",
+  "asset_type": "indices",
+  "metrics": {
+    "mae": 1684.8274632855191,
+    "rmse": 1763.7292631852613,
+    "mape": 6.656165802657256,
+    "r2": -3.0314984078468017,
+    "directional_accuracy": 46.994535519125684,
+    "directional_accuracy_nonflat": 46.994535519125684,
+    "flat_day_ratio": 0.0
+  },
+  "naive_baseline": {
+    "mae": 153.40655951161202,
+    "rmse": 205.70297122563613,
+    "mape": 0.6211746575694708,
+    "directional_accuracy": 0.0,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_indices_INDEX_NSEI_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_indices_INDEX_NSEI_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_lstm_indices_INDEX_NSEI.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_lstm_indices_INDEX_NSEI.json"
+  }
+}

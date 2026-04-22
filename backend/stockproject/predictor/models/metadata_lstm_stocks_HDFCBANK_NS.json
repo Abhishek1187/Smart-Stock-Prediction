@@ -1,0 +1,44 @@
+{
+  "symbol": "HDFCBANK.NS",
+  "asset_type": "stocks",
+  "model_type": "lstm",
+  "training_data_points": 1217,
+  "history_period": "5y",
+  "sequence_length": 120,
+  "seed": 42,
+  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_HDFCBANK_NS_best.keras",
+  "split": {
+    "train_end_index": 851,
+    "val_end_index": 1034,
+    "train_sequences": 731,
+    "val_sequences": 183,
+    "test_sequences": 183
+  },
+  "price_range": [
+    640.6500244140625,
+    1012.9000244140625
+  ],
+  "scaled_range": [
+    0.10000000000000009,
+    0.8999999999999999
+  ],
+  "test_mae": 118.94468647274164,
+  "test_rmse": 126.51823737392135,
+  "test_mape": 12.34139920254277,
+  "test_r2": -2.2257961893772467,
+  "test_directional_accuracy": 56.830601092896174,
+  "test_directional_accuracy_nonflat": 57.14285714285714,
+  "test_flat_day_ratio": 0.546448087431694,
+  "naive_baseline": {
+    "mae": 7.622402170316769,
+    "rmse": 10.581576226617122,
+    "mape": 0.8491103746391983,
+    "directional_accuracy": 0.546448087431694,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "training_history": {
+    "final_loss": 0.01962241344153881,
+    "final_val_loss": 0.13020145893096924,
+    "best_val_loss": 0.09538183361291885
+  }
+}

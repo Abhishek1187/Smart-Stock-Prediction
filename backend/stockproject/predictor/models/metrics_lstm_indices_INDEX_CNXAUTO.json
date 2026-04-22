@@ -1,0 +1,27 @@
+{
+  "symbol": "^CNXAUTO",
+  "model_type": "lstm",
+  "asset_type": "indices",
+  "metrics": {
+    "mae": 3086.7786710117402,
+    "rmse": 3265.5642561632276,
+    "mape": 11.420794370493931,
+    "r2": -4.527471866377453,
+    "directional_accuracy": 50.27624309392266,
+    "directional_accuracy_nonflat": 50.27624309392266,
+    "flat_day_ratio": 0.0
+  },
+  "naive_baseline": {
+    "mae": 253.43338872582873,
+    "rmse": 356.77315418335183,
+    "mape": 0.9640228240079518,
+    "directional_accuracy": 0.0,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_indices_INDEX_CNXAUTO_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_indices_INDEX_CNXAUTO_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_lstm_indices_INDEX_CNXAUTO.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_lstm_indices_INDEX_CNXAUTO.json"
+  }
+}

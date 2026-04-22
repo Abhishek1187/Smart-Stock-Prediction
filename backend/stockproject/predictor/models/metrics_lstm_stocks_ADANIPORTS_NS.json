@@ -1,0 +1,27 @@
+{
+  "symbol": "ADANIPORTS.NS",
+  "model_type": "lstm",
+  "asset_type": "stocks",
+  "metrics": {
+    "mae": 164.09491400379952,
+    "rmse": 177.6804828409321,
+    "mape": 11.221451572900566,
+    "r2": -5.419644237008974,
+    "directional_accuracy": 51.36612021857923,
+    "directional_accuracy_nonflat": 52.22222222222223,
+    "flat_day_ratio": 1.639344262295082
+  },
+  "naive_baseline": {
+    "mae": 17.766121952911544,
+    "rmse": 25.274426503431897,
+    "mape": 1.2421312013044843,
+    "directional_accuracy": 1.639344262295082,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_ADANIPORTS_NS_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_ADANIPORTS_NS_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_lstm_stocks_ADANIPORTS_NS.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_lstm_stocks_ADANIPORTS_NS.json"
+  }
+}

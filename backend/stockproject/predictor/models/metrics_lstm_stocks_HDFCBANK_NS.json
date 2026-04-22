@@ -1,0 +1,27 @@
+{
+  "symbol": "HDFCBANK.NS",
+  "model_type": "lstm",
+  "asset_type": "stocks",
+  "metrics": {
+    "mae": 118.94468647274164,
+    "rmse": 126.51823737392135,
+    "mape": 12.34139920254277,
+    "r2": -2.2257961893772467,
+    "directional_accuracy": 56.830601092896174,
+    "directional_accuracy_nonflat": 57.14285714285714,
+    "flat_day_ratio": 0.546448087431694
+  },
+  "naive_baseline": {
+    "mae": 7.622402170316769,
+    "rmse": 10.581576226617122,
+    "mape": 0.8491103746391983,
+    "directional_accuracy": 0.546448087431694,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_HDFCBANK_NS_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_HDFCBANK_NS_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_lstm_stocks_HDFCBANK_NS.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_lstm_stocks_HDFCBANK_NS.json"
+  }
+}
