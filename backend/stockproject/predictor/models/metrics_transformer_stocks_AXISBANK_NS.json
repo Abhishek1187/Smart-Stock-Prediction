@@ -1,0 +1,27 @@
+{
+  "symbol": "AXISBANK.NS",
+  "model_type": "transformer",
+  "asset_type": "stocks",
+  "metrics": {
+    "mae": 90.25154555690744,
+    "rmse": 103.45918389770327,
+    "mape": 7.168935213225995,
+    "r2": -0.10565723479440603,
+    "directional_accuracy": 48.08743169398907,
+    "directional_accuracy_nonflat": 48.35164835164835,
+    "flat_day_ratio": 0.546448087431694
+  },
+  "naive_baseline": {
+    "mae": 13.368851124914617,
+    "rmse": 19.009529713310286,
+    "mape": 1.0807873582116083,
+    "directional_accuracy": 0.546448087431694,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_AXISBANK_NS_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_AXISBANK_NS_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_transformer_stocks_AXISBANK_NS.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_transformer_stocks_AXISBANK_NS.json"
+  }
+}

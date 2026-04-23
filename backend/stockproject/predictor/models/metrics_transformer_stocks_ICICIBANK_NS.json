@@ -1,0 +1,27 @@
+{
+  "symbol": "ICICIBANK.NS",
+  "model_type": "transformer",
+  "asset_type": "stocks",
+  "metrics": {
+    "mae": 76.6209656762295,
+    "rmse": 88.89150298329902,
+    "mape": 5.702736850934423,
+    "r2": -1.6015421664749416,
+    "directional_accuracy": 47.540983606557376,
+    "directional_accuracy_nonflat": 47.8021978021978,
+    "flat_day_ratio": 0.546448087431694
+  },
+  "naive_baseline": {
+    "mae": 11.624039446721312,
+    "rmse": 15.810727930135554,
+    "mape": 0.8556375858753028,
+    "directional_accuracy": 0.546448087431694,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_ICICIBANK_NS_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_ICICIBANK_NS_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_transformer_stocks_ICICIBANK_NS.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_transformer_stocks_ICICIBANK_NS.json"
+  }
+}

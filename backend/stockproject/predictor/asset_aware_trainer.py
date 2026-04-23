@@ -182,7 +182,7 @@ class AssetAwareTrainer:
                 'gpus': [],
             }
 
-    def ensure_gpu_ready(self, require_gpu=True):
+    def ensure_gpu_ready(self, require_gpu=False):
         """
         Detect and configure TensorFlow GPU runtime.
         If require_gpu=True, raises RuntimeError when no GPU is available.
@@ -221,10 +221,7 @@ class AssetAwareTrainer:
         print(json.dumps(status, indent=2))
 
         if require_gpu and len(tf_gpus) == 0:
-            raise RuntimeError(
-                "GPU is required for this training run but TensorFlow detected no GPU. "
-                "Install compatible NVIDIA driver + CUDA/cuDNN runtime and run again."
-            )
+            print(" GPU not found, switching to CPU mode...")
 
         return status
 

@@ -1,0 +1,27 @@
+{
+  "symbol": "KOTAKBANK.NS",
+  "model_type": "transformer",
+  "asset_type": "stocks",
+  "metrics": {
+    "mae": 43.16731070429901,
+    "rmse": 47.674963215583816,
+    "mape": 10.288107336406483,
+    "r2": -3.865737987165973,
+    "directional_accuracy": 55.73770491803278,
+    "directional_accuracy_nonflat": 56.666666666666664,
+    "flat_day_ratio": 1.639344262295082
+  },
+  "naive_baseline": {
+    "mae": 3.9338245496072406,
+    "rmse": 5.567154297630917,
+    "mape": 0.9722852492949663,
+    "directional_accuracy": 1.639344262295082,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_KOTAKBANK_NS_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_KOTAKBANK_NS_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_transformer_stocks_KOTAKBANK_NS.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_transformer_stocks_KOTAKBANK_NS.json"
+  }
+}

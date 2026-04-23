@@ -1,0 +1,44 @@
+{
+  "symbol": "INFY.NS",
+  "asset_type": "stocks",
+  "model_type": "transformer",
+  "training_data_points": 1217,
+  "history_period": "5y",
+  "sequence_length": 120,
+  "seed": 42,
+  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_INFY_NS_best.keras",
+  "split": {
+    "train_end_index": 851,
+    "val_end_index": 1034,
+    "train_sequences": 731,
+    "val_sequences": 183,
+    "test_sequences": 183
+  },
+  "price_range": [
+    1220.800048828125,
+    1999.699951171875
+  ],
+  "scaled_range": [
+    0.10000000000000009,
+    0.9000000000000004
+  ],
+  "test_mae": 87.81210577292521,
+  "test_rmse": 103.35002770790194,
+  "test_mape": 6.008910891261196,
+  "test_r2": 0.25905771368712494,
+  "test_directional_accuracy": 52.459016393442624,
+  "test_directional_accuracy_nonflat": 53.03867403314917,
+  "test_flat_day_ratio": 1.092896174863388,
+  "naive_baseline": {
+    "mae": 16.840978403560452,
+    "rmse": 23.879854846783306,
+    "mape": 1.1452404744391118,
+    "directional_accuracy": 1.092896174863388,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "training_history": {
+    "final_loss": 0.01416121143847704,
+    "final_val_loss": 0.00893544964492321,
+    "best_val_loss": 0.008142122067511082
+  }
+}

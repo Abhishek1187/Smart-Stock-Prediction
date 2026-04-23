@@ -64,9 +64,9 @@ def _fairness_checks(symbol, trainer):
     return checks
 
 
-def run_protocol(symbols, period, seed, seq_len, require_gpu=True):
+def run_protocol(symbols, period, seed, seq_len, require_gpu=False):
     trainer = AssetAwareTrainer(seed=seed)
-    trainer.ensure_gpu_ready(require_gpu=require_gpu)
+    trainer.ensure_gpu_ready(require_gpu=False)
     rows = []
 
     for symbol in symbols:

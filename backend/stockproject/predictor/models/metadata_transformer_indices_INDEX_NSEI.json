@@ -1,0 +1,44 @@
+{
+  "symbol": "^NSEI",
+  "asset_type": "indices",
+  "model_type": "transformer",
+  "training_data_points": 1216,
+  "history_period": "5y",
+  "sequence_length": 120,
+  "seed": 42,
+  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_indices_INDEX_NSEI_best.keras",
+  "split": {
+    "train_end_index": 851,
+    "val_end_index": 1033,
+    "train_sequences": 731,
+    "val_sequences": 182,
+    "test_sequences": 183
+  },
+  "price_range": [
+    14906.0498046875,
+    26328.55078125
+  ],
+  "scaled_range": [
+    0.0,
+    1.0
+  ],
+  "test_mae": 797.978771772541,
+  "test_rmse": 932.4952775757857,
+  "test_mape": 3.179829734357319,
+  "test_r2": -0.12692738737168807,
+  "test_directional_accuracy": 49.72677595628415,
+  "test_directional_accuracy_nonflat": 49.72677595628415,
+  "test_flat_day_ratio": 0.0,
+  "naive_baseline": {
+    "mae": 153.40655951161202,
+    "rmse": 205.70297122563613,
+    "mape": 0.6211746575694708,
+    "directional_accuracy": 0.0,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "training_history": {
+    "final_loss": 0.009251567535102367,
+    "final_val_loss": 0.034980159252882004,
+    "best_val_loss": 0.00678841769695282
+  }
+}

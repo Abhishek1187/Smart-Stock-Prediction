@@ -1,0 +1,27 @@
+{
+  "symbol": "^CNXAUTO",
+  "model_type": "transformer",
+  "asset_type": "indices",
+  "metrics": {
+    "mae": 3383.912012258287,
+    "rmse": 3591.2924202788395,
+    "mape": 12.538278324817714,
+    "r2": -5.685157000772144,
+    "directional_accuracy": 50.82872928176796,
+    "directional_accuracy_nonflat": 50.82872928176796,
+    "flat_day_ratio": 0.0
+  },
+  "naive_baseline": {
+    "mae": 253.43338872582873,
+    "rmse": 356.77315418335183,
+    "mape": 0.9640228240079518,
+    "directional_accuracy": 0.0,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_indices_INDEX_CNXAUTO_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_indices_INDEX_CNXAUTO_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_transformer_indices_INDEX_CNXAUTO.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_transformer_indices_INDEX_CNXAUTO.json"
+  }
+}

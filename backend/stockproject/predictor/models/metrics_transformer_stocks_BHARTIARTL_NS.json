@@ -1,0 +1,27 @@
+{
+  "symbol": "BHARTIARTL.NS",
+  "model_type": "transformer",
+  "asset_type": "stocks",
+  "metrics": {
+    "mae": 150.09079029521004,
+    "rmse": 173.08680539685727,
+    "mape": 7.4266540919352,
+    "r2": -1.9853830547365936,
+    "directional_accuracy": 50.81967213114754,
+    "directional_accuracy_nonflat": 51.098901098901095,
+    "flat_day_ratio": 0.546448087431694
+  },
+  "naive_baseline": {
+    "mae": 17.064485143442624,
+    "rmse": 22.687760765718647,
+    "mape": 0.8686478747852701,
+    "directional_accuracy": 0.546448087431694,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_BHARTIARTL_NS_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_BHARTIARTL_NS_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_transformer_stocks_BHARTIARTL_NS.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_transformer_stocks_BHARTIARTL_NS.json"
+  }
+}
