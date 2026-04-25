@@ -1,0 +1,44 @@
+{
+  "symbol": "TCS.NS",
+  "asset_type": "stocks",
+  "model_type": "transformer",
+  "training_data_points": 1217,
+  "history_period": "5y",
+  "sequence_length": 120,
+  "seed": 42,
+  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_TCS_NS_best.keras",
+  "split": {
+    "train_end_index": 851,
+    "val_end_index": 1034,
+    "train_sequences": 731,
+    "val_sequences": 183,
+    "test_sequences": 183
+  },
+  "price_range": [
+    2356.0,
+    4553.75
+  ],
+  "scaled_range": [
+    0.10000000000000009,
+    0.8999999999999999
+  ],
+  "test_mae": 395.09369663592895,
+  "test_rmse": 460.18436650404476,
+  "test_mape": 14.172084852108505,
+  "test_r2": -2.03752367941832,
+  "test_directional_accuracy": 46.44808743169399,
+  "test_directional_accuracy_nonflat": 46.7032967032967,
+  "test_flat_day_ratio": 0.546448087431694,
+  "naive_baseline": {
+    "mae": 30.008199389515028,
+    "rmse": 41.67847844968952,
+    "mape": 1.026263408617061,
+    "directional_accuracy": 0.546448087431694,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "training_history": {
+    "final_loss": 0.012486805208027363,
+    "final_val_loss": 0.03698599711060524,
+    "best_val_loss": 0.022950641810894012
+  }
+}

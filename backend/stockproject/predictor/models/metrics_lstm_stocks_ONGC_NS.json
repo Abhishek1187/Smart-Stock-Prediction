@@ -1,0 +1,27 @@
+{
+  "symbol": "ONGC.NS",
+  "model_type": "lstm",
+  "asset_type": "stocks",
+  "metrics": {
+    "mae": 6.112493963189464,
+    "rmse": 7.796275002806451,
+    "mape": 2.4049012426588554,
+    "r2": 0.7861627803934801,
+    "directional_accuracy": 45.90163934426229,
+    "directional_accuracy_nonflat": 46.15384615384615,
+    "flat_day_ratio": 0.546448087431694
+  },
+  "naive_baseline": {
+    "mae": 2.4412569973638147,
+    "rmse": 3.6042034800114284,
+    "mape": 0.9567233740261141,
+    "directional_accuracy": 0.546448087431694,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_ONGC_NS_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_ONGC_NS_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_lstm_stocks_ONGC_NS.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_lstm_stocks_ONGC_NS.json"
+  }
+}

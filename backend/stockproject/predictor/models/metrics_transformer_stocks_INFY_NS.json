@@ -1,0 +1,27 @@
+{
+  "symbol": "INFY.NS",
+  "model_type": "transformer",
+  "asset_type": "stocks",
+  "metrics": {
+    "mae": 87.81210577292521,
+    "rmse": 103.35002770790194,
+    "mape": 6.008910891261196,
+    "r2": 0.25905771368712494,
+    "directional_accuracy": 52.459016393442624,
+    "directional_accuracy_nonflat": 53.03867403314917,
+    "flat_day_ratio": 1.092896174863388
+  },
+  "naive_baseline": {
+    "mae": 16.840978403560452,
+    "rmse": 23.879854846783306,
+    "mape": 1.1452404744391118,
+    "directional_accuracy": 1.092896174863388,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_INFY_NS_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_INFY_NS_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_transformer_stocks_INFY_NS.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_transformer_stocks_INFY_NS.json"
+  }
+}

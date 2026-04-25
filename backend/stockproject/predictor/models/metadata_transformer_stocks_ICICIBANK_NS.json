@@ -1,0 +1,44 @@
+{
+  "symbol": "ICICIBANK.NS",
+  "asset_type": "stocks",
+  "model_type": "transformer",
+  "training_data_points": 1217,
+  "history_period": "5y",
+  "sequence_length": 120,
+  "seed": 42,
+  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_ICICIBANK_NS_best.keras",
+  "split": {
+    "train_end_index": 851,
+    "val_end_index": 1034,
+    "train_sequences": 731,
+    "val_sequences": 183,
+    "test_sequences": 183
+  },
+  "price_range": [
+    618.5999755859375,
+    1488.5999755859375
+  ],
+  "scaled_range": [
+    0.09999999999999998,
+    0.9000000000000001
+  ],
+  "test_mae": 76.6209656762295,
+  "test_rmse": 88.89150298329902,
+  "test_mape": 5.702736850934423,
+  "test_r2": -1.6015421664749416,
+  "test_directional_accuracy": 47.540983606557376,
+  "test_directional_accuracy_nonflat": 47.8021978021978,
+  "test_flat_day_ratio": 0.546448087431694,
+  "naive_baseline": {
+    "mae": 11.624039446721312,
+    "rmse": 15.810727930135554,
+    "mape": 0.8556375858753028,
+    "directional_accuracy": 0.546448087431694,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "training_history": {
+    "final_loss": 0.006518975365906954,
+    "final_val_loss": 0.0065088579431176186,
+    "best_val_loss": 0.004643607884645462
+  }
+}

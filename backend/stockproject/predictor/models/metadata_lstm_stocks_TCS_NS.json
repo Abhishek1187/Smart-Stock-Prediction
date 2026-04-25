@@ -1,0 +1,44 @@
+{
+  "symbol": "TCS.NS",
+  "asset_type": "stocks",
+  "model_type": "lstm",
+  "training_data_points": 1217,
+  "history_period": "5y",
+  "sequence_length": 120,
+  "seed": 42,
+  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_TCS_NS_best.keras",
+  "split": {
+    "train_end_index": 851,
+    "val_end_index": 1034,
+    "train_sequences": 731,
+    "val_sequences": 183,
+    "test_sequences": 183
+  },
+  "price_range": [
+    2356.0,
+    4553.75
+  ],
+  "scaled_range": [
+    0.10000000000000009,
+    0.8999999999999999
+  ],
+  "test_mae": 218.40671960382514,
+  "test_rmse": 301.19698308313895,
+  "test_mape": 8.1059916045417,
+  "test_r2": -0.30123934361053983,
+  "test_directional_accuracy": 46.994535519125684,
+  "test_directional_accuracy_nonflat": 47.25274725274725,
+  "test_flat_day_ratio": 0.546448087431694,
+  "naive_baseline": {
+    "mae": 30.008199389515028,
+    "rmse": 41.67847844968952,
+    "mape": 1.026263408617061,
+    "directional_accuracy": 0.546448087431694,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "training_history": {
+    "final_loss": 0.004733948037028313,
+    "final_val_loss": 0.00715453689917922,
+    "best_val_loss": 0.005764000583440065
+  }
+}

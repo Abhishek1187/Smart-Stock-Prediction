@@ -1,0 +1,44 @@
+{
+  "symbol": "KOTAKBANK.NS",
+  "asset_type": "stocks",
+  "model_type": "transformer",
+  "training_data_points": 1217,
+  "history_period": "5y",
+  "sequence_length": 120,
+  "seed": 42,
+  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_KOTAKBANK_NS_best.keras",
+  "split": {
+    "train_end_index": 851,
+    "val_end_index": 1034,
+    "train_sequences": 731,
+    "val_sequences": 183,
+    "test_sequences": 183
+  },
+  "price_range": [
+    309.3399963378906,
+    453.760009765625
+  ],
+  "scaled_range": [
+    0.10000000000000009,
+    0.8999999999999999
+  ],
+  "test_mae": 43.16731070429901,
+  "test_rmse": 47.674963215583816,
+  "test_mape": 10.288107336406483,
+  "test_r2": -3.865737987165973,
+  "test_directional_accuracy": 55.73770491803278,
+  "test_directional_accuracy_nonflat": 56.666666666666664,
+  "test_flat_day_ratio": 1.639344262295082,
+  "naive_baseline": {
+    "mae": 3.9338245496072406,
+    "rmse": 5.567154297630917,
+    "mape": 0.9722852492949663,
+    "directional_accuracy": 1.639344262295082,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "training_history": {
+    "final_loss": 0.010473517701029778,
+    "final_val_loss": 0.07358644157648087,
+    "best_val_loss": 0.07036996632814407
+  }
+}

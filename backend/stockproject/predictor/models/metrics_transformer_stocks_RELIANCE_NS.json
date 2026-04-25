@@ -1,0 +1,27 @@
+{
+  "symbol": "RELIANCE.NS",
+  "model_type": "transformer",
+  "asset_type": "stocks",
+  "metrics": {
+    "mae": 119.94539854956454,
+    "rmse": 138.05873021660602,
+    "mape": 8.152452842468758,
+    "r2": -2.8895066462207177,
+    "directional_accuracy": 49.72677595628415,
+    "directional_accuracy_nonflat": 50.27624309392266,
+    "flat_day_ratio": 1.092896174863388
+  },
+  "naive_baseline": {
+    "mae": 13.046441416922814,
+    "rmse": 17.933619634558845,
+    "mape": 0.9162189003614435,
+    "directional_accuracy": 1.092896174863388,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_RELIANCE_NS_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_RELIANCE_NS_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_transformer_stocks_RELIANCE_NS.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_transformer_stocks_RELIANCE_NS.json"
+  }
+}

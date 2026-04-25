@@ -1,0 +1,44 @@
+{
+  "symbol": "AXISBANK.NS",
+  "asset_type": "stocks",
+  "model_type": "lstm",
+  "training_data_points": 1217,
+  "history_period": "5y",
+  "sequence_length": 120,
+  "seed": 42,
+  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_AXISBANK_NS_best.keras",
+  "split": {
+    "train_end_index": 851,
+    "val_end_index": 1034,
+    "train_sequences": 731,
+    "val_sequences": 183,
+    "test_sequences": 183
+  },
+  "price_range": [
+    625.5499877929688,
+    1403.0
+  ],
+  "scaled_range": [
+    0.09999999999999998,
+    0.9000000000000001
+  ],
+  "test_mae": 78.23696916090334,
+  "test_rmse": 88.8765384740479,
+  "test_mape": 6.258266875671876,
+  "test_r2": 0.18406290389815472,
+  "test_directional_accuracy": 47.540983606557376,
+  "test_directional_accuracy_nonflat": 47.8021978021978,
+  "test_flat_day_ratio": 0.546448087431694,
+  "naive_baseline": {
+    "mae": 13.368851124914617,
+    "rmse": 19.009529713310286,
+    "mape": 1.0807873582116083,
+    "directional_accuracy": 0.546448087431694,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "training_history": {
+    "final_loss": 0.008675836957991123,
+    "final_val_loss": 0.003877951530739665,
+    "best_val_loss": 0.0030869264155626297
+  }
+}

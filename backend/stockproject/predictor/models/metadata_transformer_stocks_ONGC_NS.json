@@ -1,0 +1,44 @@
+{
+  "symbol": "ONGC.NS",
+  "asset_type": "stocks",
+  "model_type": "transformer",
+  "training_data_points": 1217,
+  "history_period": "5y",
+  "sequence_length": 120,
+  "seed": 42,
+  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_ONGC_NS_best.keras",
+  "split": {
+    "train_end_index": 851,
+    "val_end_index": 1034,
+    "train_sequences": 731,
+    "val_sequences": 183,
+    "test_sequences": 183
+  },
+  "price_range": [
+    110.19999694824219,
+    341.75
+  ],
+  "scaled_range": [
+    0.10000000000000003,
+    0.9000000000000001
+  ],
+  "test_mae": 11.901113374637124,
+  "test_rmse": 16.227394992646776,
+  "test_mape": 4.505874147880534,
+  "test_r2": 0.07358279024164804,
+  "test_directional_accuracy": 49.72677595628415,
+  "test_directional_accuracy_nonflat": 50.0,
+  "test_flat_day_ratio": 0.546448087431694,
+  "naive_baseline": {
+    "mae": 2.4412569973638147,
+    "rmse": 3.6042034800114284,
+    "mape": 0.9567233740261141,
+    "directional_accuracy": 0.546448087431694,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "training_history": {
+    "final_loss": 0.006644650362432003,
+    "final_val_loss": 0.012345480732619762,
+    "best_val_loss": 0.001613306230865419
+  }
+}

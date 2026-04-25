@@ -1,0 +1,44 @@
+{
+  "symbol": "^CNXAUTO",
+  "asset_type": "indices",
+  "model_type": "lstm",
+  "training_data_points": 1204,
+  "history_period": "5y",
+  "sequence_length": 120,
+  "seed": 42,
+  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_indices_INDEX_CNXAUTO_best.keras",
+  "split": {
+    "train_end_index": 842,
+    "val_end_index": 1023,
+    "train_sequences": 722,
+    "val_sequences": 181,
+    "test_sequences": 181
+  },
+  "price_range": [
+    9480.4501953125,
+    28922.349609375
+  ],
+  "scaled_range": [
+    0.0,
+    1.0
+  ],
+  "test_mae": 3086.7786710117402,
+  "test_rmse": 3265.5642561632276,
+  "test_mape": 11.420794370493931,
+  "test_r2": -4.527471866377453,
+  "test_directional_accuracy": 50.27624309392266,
+  "test_directional_accuracy_nonflat": 50.27624309392266,
+  "test_flat_day_ratio": 0.0,
+  "naive_baseline": {
+    "mae": 253.43338872582873,
+    "rmse": 356.77315418335183,
+    "mape": 0.9640228240079518,
+    "directional_accuracy": 0.0,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "training_history": {
+    "final_loss": 0.013891334645450115,
+    "final_val_loss": 0.004560170229524374,
+    "best_val_loss": 0.0026258293073624372
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "symbol": "SBIN.NS",
+  "model_type": "transformer",
+  "asset_type": "stocks",
+  "metrics": {
+    "mae": 87.4440774552809,
+    "rmse": 109.00485147415029,
+    "mape": 8.452389362615142,
+    "r2": 0.1405892356598376,
+    "directional_accuracy": 44.80874316939891,
+    "directional_accuracy_nonflat": 45.30386740331492,
+    "flat_day_ratio": 1.092896174863388
+  },
+  "naive_baseline": {
+    "mae": 9.616121552681012,
+    "rmse": 14.489128278628247,
+    "mape": 0.9593604035858998,
+    "directional_accuracy": 1.092896174863388,
+    "directional_accuracy_nonflat": 0.0
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_SBIN_NS_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_SBIN_NS_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_transformer_stocks_SBIN_NS.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_transformer_stocks_SBIN_NS.json"
+  }
+}
