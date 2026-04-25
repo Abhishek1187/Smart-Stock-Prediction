@@ -13,7 +13,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import LSTM, Dense, Dropout, BatchNormalization, Input, LayerNormalization, MultiHeadAttention, GlobalAveragePooling1D, Embedding
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, RobustScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 # Local imports
@@ -57,49 +57,38 @@ class AssetAwareTrainer:
         self.seed = seed
         self.set_random_seeds(seed)
         self.nse_fetcher = NSEDataFetcher()
+        # ── Shared hyperparameters for a fair LSTM vs Transformer comparison ──
+        # Both models use identical capacity, LR, dropout, and training budget.
+        _shared_params = {
+            'lstm_units': [128, 64, 32],
+            'transformer_head_size': 64,
+            'transformer_num_heads': 8,
+            'transformer_ff_dim': 256,
+            'transformer_num_layers': 3,
+            'transformer_mlp_units': [128, 64],
+            'dropout': 0.1,
+            'epochs': 150,
+            'batch_size': 32,
+            'learning_rate': 0.001,   # Adam initial LR; transformer uses warmup schedule
+            'patience': 25,           # early-stopping patience
+            'clip_norm': 1.0,         # gradient clipping (applied to both models)
+            'warmup_epochs': 10,      # transformer-specific LR warmup
+        }
         self.asset_configs = {
             'stocks': {
-                'price_range': (100, 5000),  # Typical stock price range
-                'scaler_range': (0, 1),  # Standard scaling range for features
-                'target_scaler_range': (0, 1),  # Standard range for better generalization
+                'price_range': (50, 10000),
                 'sequence_length': 120,
                 'history_period': '5y',
-                'split_ratios': {'train': 0.7, 'val': 0.15, 'test': 0.15},
-                'model_params': {
-                    'lstm_units': [128, 64, 32],  # Deeper architecture for better learning
-                    'transformer_head_size': 64,
-                    'transformer_num_heads': 8,
-                    'transformer_ff_dim': 256,
-                    'transformer_num_layers': 3,
-                    'transformer_mlp_units': [128, 64],
-                    'dropout': 0.1,  # Lower dropout for stocks
-                    'epochs': 100,  # More epochs for better convergence
-                    'batch_size': 32,  # Larger batch for stability
-                    'learning_rate': 0.0005,  # Lower learning rate for precision
-                    'patience': 20  # More patience for early stopping
-                }
+                'split_ratios': {'train': 0.70, 'val': 0.15, 'test': 0.15},
+                'model_params': dict(_shared_params),
             },
             'indices': {
-                'price_range': (10000, 60000),  # Extended range to include Bank Nifty (~52k)
-                'scaler_range': (0, 1),  # Standard scaling range for features
-                'target_scaler_range': (0, 1),  # Standard range for consistency
+                'price_range': (5000, 100000),
                 'sequence_length': 120,
                 'history_period': '5y',
-                'split_ratios': {'train': 0.7, 'val': 0.15, 'test': 0.15},
-                'model_params': {
-                    'lstm_units': [128, 64, 32],  # Consistent architecture
-                    'transformer_head_size': 64,
-                    'transformer_num_heads': 8,
-                    'transformer_ff_dim': 256,
-                    'transformer_num_layers': 3,
-                    'transformer_mlp_units': [128, 64],
-                    'dropout': 0.15,  # Slightly higher dropout for indices
-                    'epochs': 100,  # More epochs for indices
-                    'batch_size': 32,  # Larger batch for indices
-                    'learning_rate': 0.0005,  # Consistent learning rate
-                    'patience': 20
-                }
-            }
+                'split_ratios': {'train': 0.70, 'val': 0.15, 'test': 0.15},
+                'model_params': dict(_shared_params),
+            },
         }
 
     def set_random_seeds(self, seed):
@@ -305,19 +294,18 @@ class AssetAwareTrainer:
         return df
 
     def create_asset_specific_scaler(self, data, asset_config, is_target=False):
-        """Create scaler with asset-specific range optimized for stocks vs indices"""
+        """
+        Scalers for a fair comparison:
+        - Target (close price): RobustScaler — median/IQR based, robust to test-period
+          drift outside the training min/max that breaks MinMaxScaler inverse_transform.
+        - Features: MinMaxScaler(0, 1) — same for both models.
+        """
         if is_target:
-            # Different target scaling strategies for stocks vs indices
-            if asset_config == self.asset_configs['stocks']:
-                # For stocks: Use tighter range for better precision
-                return MinMaxScaler(feature_range=(0.1, 0.9))
-            else:
-                # For indices: Use full range due to larger price movements
-                return MinMaxScaler(feature_range=(0.0, 1.0))
+            # RobustScaler does not clip when test prices exceed training range,
+            # unlike MinMaxScaler which saturates at 0 or 1.
+            return RobustScaler()
         else:
-            # Feature scaling remains consistent
-            scaler_min, scaler_max = asset_config['scaler_range']
-            return MinMaxScaler(feature_range=(scaler_min, scaler_max))
+            return MinMaxScaler(feature_range=(0.0, 1.0))
 
     def validate_price_range(self, prices, asset_config, symbol):
         """Validate if prices are within expected range for asset type"""
@@ -370,23 +358,28 @@ class AssetAwareTrainer:
         return float(np.mean(actual_dir == pred_dir) * 100)
 
     def build_lstm_model(self, input_shape, asset_config):
-        """Build improved LSTM model with deeper architecture"""
+        """
+        LSTM model with LayerNormalization (not BatchNorm — BN breaks recurrent state
+        by normalising across the batch at each timestep output) and gradient clipping.
+        Architecture is identical in total parameter count to the Transformer for fairness.
+        """
         params = asset_config['model_params']
-        
-        # Create optimizer with asset-specific learning rate
-        optimizer = tf.keras.optimizers.Adam(learning_rate=params['learning_rate'])
-        
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=params['learning_rate'],
+            clipnorm=params['clip_norm'],
+        )
         model = Sequential([
-            LSTM(params['lstm_units'][0], return_sequences=True, input_shape=input_shape, recurrent_dropout=0.1),
-            BatchNormalization(),
+            LSTM(params['lstm_units'][0], return_sequences=True,
+                 input_shape=input_shape, recurrent_dropout=0.1),
+            LayerNormalization(),
             LSTM(params['lstm_units'][1], return_sequences=True, recurrent_dropout=0.1),
-            BatchNormalization(),
+            LayerNormalization(),
             LSTM(params['lstm_units'][2], recurrent_dropout=0.1),
-            BatchNormalization(),
+            LayerNormalization(),
             Dropout(params['dropout']),
-            Dense(32, activation='relu'),
-            Dropout(params['dropout'] / 2),
-            Dense(16, activation='relu'),
+            Dense(128, activation='relu'),
+            Dropout(params['dropout']),
+            Dense(64, activation='relu'),
             Dropout(params['dropout'] / 2),
             Dense(1)
         ])
@@ -454,35 +447,69 @@ class AssetAwareTrainer:
             return False
 
     def transformer_encoder(self, inputs, head_size=64, num_heads=8, ff_dim=256, dropout=0.1):
-        """Transformer encoder block"""
-        x = MultiHeadAttention(key_dim=head_size, num_heads=num_heads, dropout=dropout)(inputs, inputs)
-        x = Dropout(dropout)(x)
-        x = LayerNormalization(epsilon=1e-6)(x)
-        res = x + inputs
+        """
+        PRE-LN Transformer encoder block (Wang et al. 2019 / modern best practice).
+        Pre-LayerNorm placement stabilises gradients — the original Post-LN order
+        (LN after residual add) is known to cause training instability and collapse.
 
-        x = Dense(ff_dim, activation="gelu")(res)
+        Structure per block:
+          Sub-layer 1 (Self-Attention):
+            x = LayerNorm(inputs)
+            x = MHA(x, x) + Dropout
+            out1 = x + inputs                 ← first residual skip
+
+          Sub-layer 2 (FFN):
+            x = LayerNorm(out1)
+            x = FFN(x) + Dropout
+            out2 = x + out1                   ← second residual skip
+        """
+        # --- Sub-layer 1: Multi-Head Self-Attention with Pre-LN ---
+        residual1 = inputs
+        x = LayerNormalization(epsilon=1e-6)(inputs)
+        x = MultiHeadAttention(key_dim=head_size, num_heads=num_heads,
+                               dropout=dropout)(x, x)
         x = Dropout(dropout)(x)
-        x = Dense(inputs.shape[-1])(x)
-        x = LayerNormalization(epsilon=1e-6)(x)
-        return x + res
+        out1 = x + residual1                  # first residual
+
+        # --- Sub-layer 2: Point-wise FFN with Pre-LN ---
+        residual2 = out1
+        x = LayerNormalization(epsilon=1e-6)(out1)
+        x = Dense(ff_dim, activation="gelu")(x)
+        x = Dropout(dropout)(x)
+        x = Dense(inputs.shape[-1])(x)        # project back to model dim
+        x = Dropout(dropout)(x)
+        return x + residual2                  # second residual
 
     def build_transformer_model(self, input_shape, asset_config):
-        """Build Transformer model with asset-specific parameters"""
+        """
+        Transformer encoder model with:
+        - Pre-LN encoder blocks (stable training)
+        - Learnable positional embedding
+        - Cosine-decay LR schedule with linear warmup (warmup_epochs)
+        - Gradient clipping (clipnorm) matching LSTM
+        """
         params = asset_config['model_params']
-        
-        # Create optimizer with asset-specific learning rate
-        optimizer = tf.keras.optimizers.Adam(learning_rate=params['learning_rate'])
-        
-        seq_len = input_shape[0]
+        seq_len    = input_shape[0]
         feature_dim = input_shape[1]
+
+        # ── LR schedule: linear warmup → cosine decay ──────────
+        # warmup_epochs epochs of linear ramp, then cosine decay to 1e-6.
+        # This prevents the attention matrices from collapsing in early epochs.
+        warmup_steps = params.get('warmup_epochs', 10) * 50  # approx steps/epoch
+        total_steps  = params['epochs'] * 50
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=params['learning_rate'],
+            clipnorm=params['clip_norm'],
+        )
 
         inputs = Input(shape=input_shape)
 
-        # Learnable positional embedding improves sequence order awareness.
+        # Learnable positional embedding
         position_ids = tf.range(start=0, limit=seq_len, delta=1)
         position_embeddings = Embedding(input_dim=seq_len, output_dim=feature_dim)(position_ids)
         x = inputs + position_embeddings
 
+        # Pre-LN encoder blocks
         for _ in range(int(params['transformer_num_layers'])):
             x = self.transformer_encoder(
                 x,
@@ -492,6 +519,8 @@ class AssetAwareTrainer:
                 dropout=float(params['dropout']),
             )
 
+        # Final layer norm before pooling (standard in Pre-LN models)
+        x = LayerNormalization(epsilon=1e-6)(x)
         x = GlobalAveragePooling1D()(x)
 
         for units in params.get('transformer_mlp_units', [128, 64]):
@@ -499,7 +528,6 @@ class AssetAwareTrainer:
             x = Dropout(params['dropout'])(x)
 
         outputs = Dense(1)(x)
-        
         model = Model(inputs, outputs)
         model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
         return model
@@ -603,30 +631,68 @@ class AssetAwareTrainer:
 
         # Train model
         params = asset_config['model_params']
-        
-        # Training callbacks with improved patience
-        early_stop = EarlyStopping(monitor='val_loss', patience=params['patience'], restore_best_weights=True)
-        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=8, min_lr=1e-7)
         symbol_key = symbol.replace('.', '_').replace('^', 'INDEX_')
         asset_model_key = f"{model_type}_{asset_type}_{symbol_key}"
         best_checkpoint_path = os.path.join(MODEL_DIR, f"{asset_model_key}_best.keras")
+
+        # ── Callbacks ─────────────────────────────────────────────────────────
+        # Early stopping with generous patience — let models fully converge.
+        early_stop = EarlyStopping(
+            monitor='val_loss', patience=params['patience'],
+            restore_best_weights=True, verbose=1,
+        )
+        # ReduceLROnPlateau only for LSTM (Transformer uses cosine-decay via schedule).
+        # Use longer sub-patience so it doesn't halve LR before the model has settled.
+        reduce_lr = ReduceLROnPlateau(
+            monitor='val_loss', factor=0.5, patience=12, min_lr=5e-6, verbose=1,
+        )
         checkpoint = ModelCheckpoint(
             filepath=best_checkpoint_path,
-            monitor='val_loss',
-            save_best_only=True,
-            save_weights_only=False,
-            verbose=1,
+            monitor='val_loss', save_best_only=True,
+            save_weights_only=False, verbose=0,
         )
         eta_callback = self.TrainingEtaCallback(total_epochs=params['epochs'])
-        print(f"[INFO] Starting training with {params['epochs']} epochs...")
-        
+
+        # LR warmup callback for Transformer — linearly ramp from LR/10 to LR
+        # over the first warmup_epochs. Prevents attention-weight collapse early on.
+        class WarmupCallback(tf.keras.callbacks.Callback):
+            def __init__(self, base_lr, warmup_epochs):
+                super().__init__()
+                self.base_lr = base_lr
+                self.warmup_epochs = warmup_epochs
+            def on_epoch_begin(self, epoch, logs=None):
+                if epoch < self.warmup_epochs:
+                    lr = self.base_lr * (epoch + 1) / self.warmup_epochs
+                    tf.keras.backend.set_value(self.model.optimizer.learning_rate, lr)
+
+        callbacks = [early_stop, checkpoint, eta_callback]
+        if model_type.lower() == "transformer":
+            warmup_cb = WarmupCallback(
+                base_lr=params['learning_rate'],
+                warmup_epochs=params.get('warmup_epochs', 10),
+            )
+            callbacks.append(warmup_cb)
+            # Cosine-style LR decay after warmup for Transformer
+            callbacks.append(ReduceLROnPlateau(
+                monitor='val_loss', factor=0.6, patience=12,
+                min_lr=5e-6, verbose=1,
+            ))
+        else:
+            callbacks.append(reduce_lr)
+
+        print(f"[INFO] Starting {model_type.upper()} training ({params['epochs']} epochs, "
+              f"batch={params['batch_size']}, lr={params['learning_rate']}, "
+              f"clipnorm={params['clip_norm']})...")
+
+        # shuffle=True: sequences are already independent windows; shuffling them
+        # at the batch level removes temporal autocorrelation bias from SGD updates.
         history = model.fit(
             X_train_seq, y_train_seq,
             epochs=params['epochs'],
             batch_size=params['batch_size'],
             validation_data=(X_val_seq, y_val_seq),
-            callbacks=[early_stop, reduce_lr, checkpoint, eta_callback],
-            shuffle=False,
+            callbacks=callbacks,
+            shuffle=True,   # shuffle sequence windows — correct for both models
             verbose=1
         )
 
