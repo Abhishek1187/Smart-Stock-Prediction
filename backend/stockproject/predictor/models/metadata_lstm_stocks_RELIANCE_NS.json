@@ -2,15 +2,15 @@
   "symbol": "RELIANCE.NS",
   "asset_type": "stocks",
   "model_type": "lstm",
-  "training_data_points": 1217,
+  "training_data_points": 1218,
   "history_period": "5y",
   "sequence_length": 120,
   "seed": 42,
-  "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_RELIANCE_NS_best.keras",
+  "best_checkpoint_path": "D:\\major-project\\backend\\stockproject\\predictor\\models\\lstm_stocks_RELIANCE_NS_best.keras",
   "split": {
-    "train_end_index": 851,
-    "val_end_index": 1034,
-    "train_sequences": 731,
+    "train_end_index": 852,
+    "val_end_index": 1035,
+    "train_sequences": 732,
     "val_sequences": 183,
     "test_sequences": 183
   },
@@ -19,26 +19,26 @@
     1600.9000244140625
   ],
   "scaled_range": [
-    0.09999999999999998,
-    0.9
+    -1.5581402921572587,
+    2.385885705397763
   ],
-  "test_mae": 48.27896735186134,
-  "test_rmse": 62.02414382880965,
-  "test_mape": 3.2925708201250505,
-  "test_r2": 0.21496625645136436,
-  "test_directional_accuracy": 48.08743169398907,
-  "test_directional_accuracy_nonflat": 48.61878453038674,
+  "test_mae": 22.0380525849556,
+  "test_rmse": 27.604675367559647,
+  "test_mape": 1.5254531927099995,
+  "test_r2": 0.8482229781447459,
+  "test_directional_accuracy": 52.459016393442624,
+  "test_directional_accuracy_nonflat": 53.03867403314917,
   "test_flat_day_ratio": 1.092896174863388,
   "naive_baseline": {
-    "mae": 13.046441416922814,
-    "rmse": 17.933619634558845,
-    "mape": 0.9162189003614435,
+    "mae": 13.037697713883198,
+    "rmse": 17.923701505449475,
+    "mape": 0.9163995021311782,
     "directional_accuracy": 1.092896174863388,
     "directional_accuracy_nonflat": 0.0
   },
   "training_history": {
-    "final_loss": 0.01126430369913578,
-    "final_val_loss": 0.010774583555758,
-    "best_val_loss": 0.007285894360393286
+    "final_loss": 0.01644195057451725,
+    "final_val_loss": 0.06004909798502922,
+    "best_val_loss": 0.034573204815387726
   }
 }

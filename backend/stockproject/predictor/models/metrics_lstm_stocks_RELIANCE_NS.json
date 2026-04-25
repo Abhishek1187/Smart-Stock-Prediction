@@ -3,25 +3,25 @@
   "model_type": "lstm",
   "asset_type": "stocks",
   "metrics": {
-    "mae": 48.27896735186134,
-    "rmse": 62.02414382880965,
-    "mape": 3.2925708201250505,
-    "r2": 0.21496625645136436,
-    "directional_accuracy": 48.08743169398907,
-    "directional_accuracy_nonflat": 48.61878453038674,
+    "mae": 22.0380525849556,
+    "rmse": 27.604675367559647,
+    "mape": 1.5254531927099995,
+    "r2": 0.8482229781447459,
+    "directional_accuracy": 52.459016393442624,
+    "directional_accuracy_nonflat": 53.03867403314917,
     "flat_day_ratio": 1.092896174863388
   },
   "naive_baseline": {
-    "mae": 13.046441416922814,
-    "rmse": 17.933619634558845,
-    "mape": 0.9162189003614435,
+    "mae": 13.037697713883198,
+    "rmse": 17.923701505449475,
+    "mape": 0.9163995021311782,
     "directional_accuracy": 1.092896174863388,
     "directional_accuracy_nonflat": 0.0
   },
   "artifacts": {
-    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_RELIANCE_NS_model.keras",
-    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_RELIANCE_NS_best.keras",
-    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_lstm_stocks_RELIANCE_NS.csv",
-    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_lstm_stocks_RELIANCE_NS.json"
+    "model_path": "D:\\major-project\\backend\\stockproject\\predictor\\models\\lstm_stocks_RELIANCE_NS_model.keras",
+    "best_checkpoint_path": "D:\\major-project\\backend\\stockproject\\predictor\\models\\lstm_stocks_RELIANCE_NS_best.keras",
+    "evaluation_csv_path": "D:\\major-project\\backend\\stockproject\\predictor\\models\\evaluation_lstm_stocks_RELIANCE_NS.csv",
+    "metadata_path": "D:\\major-project\\backend\\stockproject\\predictor\\models\\metadata_lstm_stocks_RELIANCE_NS.json"
   }
 }

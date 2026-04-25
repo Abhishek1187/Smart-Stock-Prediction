@@ -663,7 +663,13 @@ class AssetAwareTrainer:
             def on_epoch_begin(self, epoch, logs=None):
                 if epoch < self.warmup_epochs:
                     lr = self.base_lr * (epoch + 1) / self.warmup_epochs
-                    tf.keras.backend.set_value(self.model.optimizer.learning_rate, lr)
+                    optimizer = self.model.optimizer
+                    # Keras/TensorFlow can expose LR as a Variable, float, or schedule-like object.
+                    # Prefer assign() when available and fall back to direct property assignment.
+                    if hasattr(optimizer.learning_rate, "assign"):
+                        optimizer.learning_rate.assign(lr)
+                    else:
+                        optimizer.learning_rate = lr
 
         callbacks = [early_stop, checkpoint, eta_callback]
         if model_type.lower() == "transformer":
