@@ -3,25 +3,25 @@
   "model_type": "lstm",
   "asset_type": "stocks",
   "metrics": {
-    "mae": 22.0380525849556,
-    "rmse": 27.604675367559647,
-    "mape": 1.5254531927099995,
-    "r2": 0.8482229781447459,
-    "directional_accuracy": 52.459016393442624,
-    "directional_accuracy_nonflat": 53.03867403314917,
+    "mae": 23.72637439164959,
+    "rmse": 30.714770076180265,
+    "mape": 1.6335204918758153,
+    "r2": 0.8136247219455087,
+    "directional_accuracy": 56.284153005464475,
+    "directional_accuracy_nonflat": 56.9060773480663,
     "flat_day_ratio": 1.092896174863388
   },
   "naive_baseline": {
-    "mae": 13.037697713883198,
-    "rmse": 17.923701505449475,
-    "mape": 0.9163995021311782,
+    "mae": 13.05736971162056,
+    "rmse": 17.93017578800979,
+    "mape": 0.9179354965738432,
     "directional_accuracy": 1.092896174863388,
     "directional_accuracy_nonflat": 0.0
   },
   "artifacts": {
-    "model_path": "D:\\major-project\\backend\\stockproject\\predictor\\models\\lstm_stocks_RELIANCE_NS_model.keras",
-    "best_checkpoint_path": "D:\\major-project\\backend\\stockproject\\predictor\\models\\lstm_stocks_RELIANCE_NS_best.keras",
-    "evaluation_csv_path": "D:\\major-project\\backend\\stockproject\\predictor\\models\\evaluation_lstm_stocks_RELIANCE_NS.csv",
-    "metadata_path": "D:\\major-project\\backend\\stockproject\\predictor\\models\\metadata_lstm_stocks_RELIANCE_NS.json"
+    "model_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_RELIANCE_NS_model.keras",
+    "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_RELIANCE_NS_best.keras",
+    "evaluation_csv_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\evaluation_lstm_stocks_RELIANCE_NS.csv",
+    "metadata_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\metadata_lstm_stocks_RELIANCE_NS.json"
   }
 }

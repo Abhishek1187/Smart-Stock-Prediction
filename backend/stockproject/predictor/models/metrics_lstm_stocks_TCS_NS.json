@@ -3,18 +3,18 @@
   "model_type": "lstm",
   "asset_type": "stocks",
   "metrics": {
-    "mae": 218.40671960382514,
-    "rmse": 301.19698308313895,
-    "mape": 8.1059916045417,
-    "r2": -0.30123934361053983,
-    "directional_accuracy": 46.994535519125684,
-    "directional_accuracy_nonflat": 47.25274725274725,
+    "mae": 170.22747235741122,
+    "rmse": 255.23029920249047,
+    "mape": 6.462286262080541,
+    "r2": 0.1224763725506679,
+    "directional_accuracy": 44.80874316939891,
+    "directional_accuracy_nonflat": 45.05494505494506,
     "flat_day_ratio": 0.546448087431694
   },
   "naive_baseline": {
-    "mae": 30.008199389515028,
-    "rmse": 41.67847844968952,
-    "mape": 1.026263408617061,
+    "mae": 30.81311768912227,
+    "rmse": 42.917627840119096,
+    "mape": 1.064774895152741,
     "directional_accuracy": 0.546448087431694,
     "directional_accuracy_nonflat": 0.0
   },

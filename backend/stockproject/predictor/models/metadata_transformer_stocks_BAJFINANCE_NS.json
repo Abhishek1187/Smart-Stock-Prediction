@@ -2,15 +2,15 @@
   "symbol": "BAJFINANCE.NS",
   "asset_type": "stocks",
   "model_type": "transformer",
-  "training_data_points": 1217,
+  "training_data_points": 1218,
   "history_period": "5y",
   "sequence_length": 120,
   "seed": 42,
   "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_BAJFINANCE_NS_best.keras",
   "split": {
-    "train_end_index": 851,
-    "val_end_index": 1034,
-    "train_sequences": 731,
+    "train_end_index": 852,
+    "val_end_index": 1035,
+    "train_sequences": 732,
     "val_sequences": 183,
     "test_sequences": 183
   },
@@ -19,26 +19,26 @@
     1094.1500244140625
   ],
   "scaled_range": [
-    0.10000000000000009,
-    0.9000000000000001
+    -2.0266990592158773,
+    1.3698544832640391
   ],
-  "test_mae": 172.142092845479,
-  "test_rmse": 183.69807029072183,
-  "test_mape": 17.459001409152,
-  "test_r2": -6.565688022909051,
-  "test_directional_accuracy": 46.44808743169399,
-  "test_directional_accuracy_nonflat": 46.96132596685083,
+  "test_mae": 240.8620945664703,
+  "test_rmse": 249.20515516894162,
+  "test_mape": 24.620773301045464,
+  "test_r2": -12.977535137780233,
+  "test_directional_accuracy": 45.90163934426229,
+  "test_directional_accuracy_nonflat": 46.408839779005525,
   "test_flat_day_ratio": 1.092896174863388,
   "naive_baseline": {
-    "mae": 12.992896241568477,
-    "rmse": 18.209207214620573,
-    "mape": 1.369451342136845,
+    "mae": 12.568579501793034,
+    "rmse": 17.725137162086252,
+    "mape": 1.322923131474425,
     "directional_accuracy": 1.092896174863388,
     "directional_accuracy_nonflat": 0.0
   },
   "training_history": {
-    "final_loss": 0.021745970472693443,
-    "final_val_loss": 0.1327042132616043,
-    "best_val_loss": 0.08265642821788788
+    "final_loss": 0.07316117733716965,
+    "final_val_loss": 2.890735149383545,
+    "best_val_loss": 2.336325168609619
   }
 }

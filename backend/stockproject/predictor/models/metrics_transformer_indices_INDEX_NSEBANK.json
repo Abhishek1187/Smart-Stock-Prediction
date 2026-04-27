@@ -3,18 +3,18 @@
   "model_type": "transformer",
   "asset_type": "indices",
   "metrics": {
-    "mae": 5245.011227800546,
-    "rmse": 5798.157699661451,
-    "mape": 8.987265405664129,
-    "r2": -4.638282617869079,
-    "directional_accuracy": 45.90163934426229,
-    "directional_accuracy_nonflat": 45.90163934426229,
+    "mae": 4339.337645150274,
+    "rmse": 4823.398179025953,
+    "mape": 7.435704933658065,
+    "r2": -2.8934418424637944,
+    "directional_accuracy": 46.44808743169399,
+    "directional_accuracy_nonflat": 46.44808743169399,
     "flat_day_ratio": 0.0
   },
   "naive_baseline": {
-    "mae": 391.8786074112022,
-    "rmse": 581.5842434047285,
-    "mape": 0.6954673617839506,
+    "mae": 393.09718664617486,
+    "rmse": 582.9887508384754,
+    "mape": 0.6977267778878562,
     "directional_accuracy": 0.0,
     "directional_accuracy_nonflat": 0.0
   },

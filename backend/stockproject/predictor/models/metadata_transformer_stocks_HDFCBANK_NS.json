@@ -2,15 +2,15 @@
   "symbol": "HDFCBANK.NS",
   "asset_type": "stocks",
   "model_type": "transformer",
-  "training_data_points": 1217,
+  "training_data_points": 1218,
   "history_period": "5y",
   "sequence_length": 120,
   "seed": 42,
   "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_HDFCBANK_NS_best.keras",
   "split": {
-    "train_end_index": 851,
-    "val_end_index": 1034,
-    "train_sequences": 731,
+    "train_end_index": 852,
+    "val_end_index": 1035,
+    "train_sequences": 732,
     "val_sequences": 183,
     "test_sequences": 183
   },
@@ -19,26 +19,26 @@
     1012.9000244140625
   ],
   "scaled_range": [
-    0.10000000000000009,
-    0.8999999999999999
+    -1.6242333436289584,
+    1.5324528975150453
   ],
-  "test_mae": 57.869745640155394,
-  "test_rmse": 88.35854481621733,
-  "test_mape": 6.745990744784251,
-  "test_r2": -0.5733587822280093,
-  "test_directional_accuracy": 48.08743169398907,
-  "test_directional_accuracy_nonflat": 48.35164835164835,
+  "test_mae": 106.30519379162398,
+  "test_rmse": 115.64887808169092,
+  "test_mape": 11.065186870445457,
+  "test_r2": -1.4925179890202047,
+  "test_directional_accuracy": 58.46994535519126,
+  "test_directional_accuracy_nonflat": 58.791208791208796,
   "test_flat_day_ratio": 0.546448087431694,
   "naive_baseline": {
-    "mae": 7.622402170316769,
-    "rmse": 10.581576226617122,
-    "mape": 0.8491103746391983,
+    "mae": 7.681418497054303,
+    "rmse": 10.650309894208153,
+    "mape": 0.8596141361931214,
     "directional_accuracy": 0.546448087431694,
     "directional_accuracy_nonflat": 0.0
   },
   "training_history": {
-    "final_loss": 0.012076055631041527,
-    "final_val_loss": 0.04792759567499161,
-    "best_val_loss": 0.019620120525360107
+    "final_loss": 0.05116944760084152,
+    "final_val_loss": 1.6571828126907349,
+    "best_val_loss": 1.1773086786270142
   }
 }

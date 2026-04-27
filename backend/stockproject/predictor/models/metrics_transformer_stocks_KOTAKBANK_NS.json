@@ -3,18 +3,18 @@
   "model_type": "transformer",
   "asset_type": "stocks",
   "metrics": {
-    "mae": 43.16731070429901,
-    "rmse": 47.674963215583816,
-    "mape": 10.288107336406483,
-    "r2": -3.865737987165973,
-    "directional_accuracy": 55.73770491803278,
-    "directional_accuracy_nonflat": 56.666666666666664,
+    "mae": 53.6566510643464,
+    "rmse": 58.02137178703952,
+    "mape": 12.8510823284314,
+    "r2": -5.898614105741082,
+    "directional_accuracy": 52.459016393442624,
+    "directional_accuracy_nonflat": 53.333333333333336,
     "flat_day_ratio": 1.639344262295082
   },
   "naive_baseline": {
-    "mae": 3.9338245496072406,
-    "rmse": 5.567154297630917,
-    "mape": 0.9722852492949663,
+    "mae": 3.7939341393976265,
+    "rmse": 5.07842577214666,
+    "mape": 0.9392277733237253,
     "directional_accuracy": 1.639344262295082,
     "directional_accuracy_nonflat": 0.0
   },

@@ -2,15 +2,15 @@
   "symbol": "BHARTIARTL.NS",
   "asset_type": "stocks",
   "model_type": "lstm",
-  "training_data_points": 1217,
+  "training_data_points": 1218,
   "history_period": "5y",
   "sequence_length": 120,
   "seed": 42,
   "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_BHARTIARTL_NS_best.keras",
   "split": {
-    "train_end_index": 851,
-    "val_end_index": 1034,
-    "train_sequences": 731,
+    "train_end_index": 852,
+    "val_end_index": 1035,
+    "train_sequences": 732,
     "val_sequences": 183,
     "test_sequences": 183
   },
@@ -19,26 +19,26 @@
     2162.699951171875
   ],
   "scaled_range": [
-    0.1,
-    0.9000000000000001
+    -0.9252189936021468,
+    3.2020459065311964
   ],
-  "test_mae": 293.90212562435966,
-  "test_rmse": 304.83208977085417,
-  "test_mape": 14.747590193647273,
-  "test_r2": -8.259627273332297,
+  "test_mae": 213.09748214971825,
+  "test_rmse": 227.47518200535833,
+  "test_mape": 10.64514810168146,
+  "test_r2": -3.9584123513189553,
   "test_directional_accuracy": 49.18032786885246,
   "test_directional_accuracy_nonflat": 49.45054945054945,
   "test_flat_day_ratio": 0.546448087431694,
   "naive_baseline": {
-    "mae": 17.064485143442624,
-    "rmse": 22.687760765718647,
-    "mape": 0.8686478747852701,
+    "mae": 16.950823007385587,
+    "rmse": 22.434776020170798,
+    "mape": 0.8637529601499349,
     "directional_accuracy": 0.546448087431694,
     "directional_accuracy_nonflat": 0.0
   },
   "training_history": {
-    "final_loss": 0.010538722388446331,
-    "final_val_loss": 0.018247058615088463,
-    "best_val_loss": 0.01211248617619276
+    "final_loss": 0.0160167645663023,
+    "final_val_loss": 0.301975816488266,
+    "best_val_loss": 0.10650453716516495
   }
 }

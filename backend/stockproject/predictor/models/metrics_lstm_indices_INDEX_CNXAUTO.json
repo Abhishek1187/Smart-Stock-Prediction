@@ -3,18 +3,18 @@
   "model_type": "lstm",
   "asset_type": "indices",
   "metrics": {
-    "mae": 3086.7786710117402,
-    "rmse": 3265.5642561632276,
-    "mape": 11.420794370493931,
-    "r2": -4.527471866377453,
-    "directional_accuracy": 50.27624309392266,
-    "directional_accuracy_nonflat": 50.27624309392266,
+    "mae": 2982.3866971685084,
+    "rmse": 3222.8653304398745,
+    "mape": 10.988511505501709,
+    "r2": -4.848305532001379,
+    "directional_accuracy": 51.93370165745856,
+    "directional_accuracy_nonflat": 51.93370165745856,
     "flat_day_ratio": 0.0
   },
   "naive_baseline": {
-    "mae": 253.43338872582873,
-    "rmse": 356.77315418335183,
-    "mape": 0.9640228240079518,
+    "mae": 257.77785091505524,
+    "rmse": 360.48404723617824,
+    "mape": 0.979634944383311,
     "directional_accuracy": 0.0,
     "directional_accuracy_nonflat": 0.0
   },
