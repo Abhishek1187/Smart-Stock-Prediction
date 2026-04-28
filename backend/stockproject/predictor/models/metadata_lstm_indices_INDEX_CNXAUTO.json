@@ -2,15 +2,15 @@
   "symbol": "^CNXAUTO",
   "asset_type": "indices",
   "model_type": "lstm",
-  "training_data_points": 1205,
+  "training_data_points": 1204,
   "history_period": "5y",
   "sequence_length": 120,
   "seed": 42,
   "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_indices_INDEX_CNXAUTO_best.keras",
   "split": {
-    "train_end_index": 843,
-    "val_end_index": 1024,
-    "train_sequences": 723,
+    "train_end_index": 842,
+    "val_end_index": 1023,
+    "train_sequences": 722,
     "val_sequences": 181,
     "test_sequences": 181
   },
@@ -19,26 +19,26 @@
     28922.349609375
   ],
   "scaled_range": [
-    -0.5493584928597761,
-    2.2233249975525826
+    0.0,
+    1.0
   ],
-  "test_mae": 2982.3866971685084,
-  "test_rmse": 3222.8653304398745,
-  "test_mape": 10.988511505501709,
-  "test_r2": -4.848305532001379,
-  "test_directional_accuracy": 51.93370165745856,
-  "test_directional_accuracy_nonflat": 51.93370165745856,
+  "test_mae": 3086.7786710117402,
+  "test_rmse": 3265.5642561632276,
+  "test_mape": 11.420794370493931,
+  "test_r2": -4.527471866377453,
+  "test_directional_accuracy": 50.27624309392266,
+  "test_directional_accuracy_nonflat": 50.27624309392266,
   "test_flat_day_ratio": 0.0,
   "naive_baseline": {
-    "mae": 257.77785091505524,
-    "rmse": 360.48404723617824,
-    "mape": 0.979634944383311,
+    "mae": 253.43338872582873,
+    "rmse": 356.77315418335183,
+    "mape": 0.9640228240079518,
     "directional_accuracy": 0.0,
     "directional_accuracy_nonflat": 0.0
   },
   "training_history": {
-    "final_loss": 0.008009396493434906,
-    "final_val_loss": 0.037194497883319855,
-    "best_val_loss": 0.021577581763267517
+    "final_loss": 0.013891334645450115,
+    "final_val_loss": 0.004560170229524374,
+    "best_val_loss": 0.0026258293073624372
   }
 }

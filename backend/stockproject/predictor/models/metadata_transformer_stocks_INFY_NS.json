@@ -2,43 +2,43 @@
   "symbol": "INFY.NS",
   "asset_type": "stocks",
   "model_type": "transformer",
-  "training_data_points": 1218,
+  "training_data_points": 1217,
   "history_period": "5y",
   "sequence_length": 120,
   "seed": 42,
   "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\transformer_stocks_INFY_NS_best.keras",
   "split": {
-    "train_end_index": 852,
-    "val_end_index": 1035,
-    "train_sequences": 732,
+    "train_end_index": 851,
+    "val_end_index": 1034,
+    "train_sequences": 731,
     "val_sequences": 183,
     "test_sequences": 183
   },
   "price_range": [
-    1154.5999755859375,
+    1220.800048828125,
     1999.699951171875
   ],
   "scaled_range": [
-    -1.2282241474237365,
-    1.653044094193842
+    0.10000000000000009,
+    0.9000000000000004
   ],
-  "test_mae": 142.21725914126537,
-  "test_rmse": 169.03730445182953,
-  "test_mape": 9.715807317539756,
-  "test_r2": -0.7938026722411275,
-  "test_directional_accuracy": 49.18032786885246,
-  "test_directional_accuracy_nonflat": 49.72375690607735,
+  "test_mae": 87.81210577292521,
+  "test_rmse": 103.35002770790194,
+  "test_mape": 6.008910891261196,
+  "test_r2": 0.25905771368712494,
+  "test_directional_accuracy": 52.459016393442624,
+  "test_directional_accuracy_nonflat": 53.03867403314917,
   "test_flat_day_ratio": 1.092896174863388,
   "naive_baseline": {
-    "mae": 17.47977568412739,
-    "rmse": 24.861820415274053,
-    "mape": 1.2048799172827926,
+    "mae": 16.840978403560452,
+    "rmse": 23.879854846783306,
+    "mape": 1.1452404744391118,
     "directional_accuracy": 1.092896174863388,
     "directional_accuracy_nonflat": 0.0
   },
   "training_history": {
-    "final_loss": 0.03926442563533783,
-    "final_val_loss": 0.1599501669406891,
-    "best_val_loss": 0.0959932953119278
+    "final_loss": 0.01416121143847704,
+    "final_val_loss": 0.00893544964492321,
+    "best_val_loss": 0.008142122067511082
   }
 }

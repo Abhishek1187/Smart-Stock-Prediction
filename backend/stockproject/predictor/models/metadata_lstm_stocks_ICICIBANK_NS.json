@@ -2,43 +2,43 @@
   "symbol": "ICICIBANK.NS",
   "asset_type": "stocks",
   "model_type": "lstm",
-  "training_data_points": 1218,
+  "training_data_points": 1217,
   "history_period": "5y",
   "sequence_length": 120,
   "seed": 42,
   "best_checkpoint_path": "C:\\Users\\STAR Zx\\Desktop\\Smart-Stock-Prediction\\backend\\stockproject\\predictor\\models\\lstm_stocks_ICICIBANK_NS_best.keras",
   "split": {
-    "train_end_index": 852,
-    "val_end_index": 1035,
-    "train_sequences": 732,
+    "train_end_index": 851,
+    "val_end_index": 1034,
+    "train_sequences": 731,
     "val_sequences": 183,
     "test_sequences": 183
   },
   "price_range": [
-    624.7000122070312,
+    618.5999755859375,
     1488.5999755859375
   ],
   "scaled_range": [
-    -1.1389145698132763,
-    1.79019171815445
+    0.09999999999999998,
+    0.9000000000000001
   ],
-  "test_mae": 81.62196024910348,
-  "test_rmse": 88.81717860181006,
-  "test_mape": 5.865054780406224,
-  "test_r2": -1.8163303365706063,
-  "test_directional_accuracy": 60.10928961748634,
-  "test_directional_accuracy_nonflat": 60.43956043956044,
+  "test_mae": 99.45996027044912,
+  "test_rmse": 107.20277482519465,
+  "test_mape": 7.136912767844844,
+  "test_r2": -2.7837499152226304,
+  "test_directional_accuracy": 56.284153005464475,
+  "test_directional_accuracy_nonflat": 56.59340659340659,
   "test_flat_day_ratio": 0.546448087431694,
   "naive_baseline": {
-    "mae": 11.788520187628073,
-    "rmse": 15.966373470811812,
-    "mape": 0.8693340111289688,
+    "mae": 11.624039446721312,
+    "rmse": 15.810727930135554,
+    "mape": 0.8556375858753028,
     "directional_accuracy": 0.546448087431694,
     "directional_accuracy_nonflat": 0.0
   },
   "training_history": {
-    "final_loss": 0.008822995238006115,
-    "final_val_loss": 0.20717385411262512,
-    "best_val_loss": 0.1297619491815567
+    "final_loss": 0.007325834594666958,
+    "final_val_loss": 0.014519614167511463,
+    "best_val_loss": 0.010846246965229511
   }
 }

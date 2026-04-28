@@ -532,32 +532,6 @@ class AssetAwareTrainer:
         model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
         return model
 
-    def _get_artifact_paths(self, symbol, model_type, asset_type):
-        symbol_key = symbol.replace('.', '_').replace('^', 'INDEX_')
-        asset_model_key = f"{model_type}_{asset_type}_{symbol_key}"
-        return {
-            'symbol_key': symbol_key,
-            'asset_model_key': asset_model_key,
-            'model_path': os.path.join(MODEL_DIR, f"{asset_model_key}_model.keras"),
-            'feature_scaler_path': os.path.join(MODEL_DIR, f"feature_scaler_{asset_type}_{symbol_key}.pkl"),
-            'target_scaler_path': os.path.join(MODEL_DIR, f"target_scaler_{asset_type}_{symbol_key}.pkl"),
-            'best_checkpoint_path': os.path.join(MODEL_DIR, f"{asset_model_key}_best.keras"),
-            'metadata_path': os.path.join(MODEL_DIR, f"metadata_{model_type}_{asset_type}_{symbol_key}.json"),
-            'metrics_path': os.path.join(MODEL_DIR, f"metrics_{asset_model_key}.json"),
-            'evaluation_csv_path': os.path.join(MODEL_DIR, f"evaluation_{asset_model_key}.csv"),
-            'backup_dir': os.path.join(MODEL_DIR, "training_backups", asset_model_key),
-        }
-
-    def _is_training_complete(self, artifact_paths):
-        required = [
-            artifact_paths['model_path'],
-            artifact_paths['feature_scaler_path'],
-            artifact_paths['target_scaler_path'],
-            artifact_paths['metadata_path'],
-            artifact_paths['metrics_path'],
-        ]
-        return all(os.path.exists(path) for path in required)
-
     def train_asset_specific_model(self, symbol, model_type="lstm", history_period=None, sequence_length=None, init_from_global=False, require_gpu=False):
         """Train asset-specific model with proper validation"""
         print(f"\n[INFO] Training {model_type.upper()} model for {symbol}")
@@ -568,14 +542,6 @@ class AssetAwareTrainer:
         # Get asset configuration
         asset_config, asset_type = self.get_asset_config(symbol)
         print(f"[INFO] Detected asset type: {asset_type}")
-
-        artifact_paths = self._get_artifact_paths(symbol, model_type, asset_type)
-        if self._is_training_complete(artifact_paths):
-            print(
-                f"[INFO] ⏭️ Skipping {model_type.upper()} for {symbol}: "
-                f"artifacts already exist ({artifact_paths['metrics_path']})"
-            )
-            return True
         
         # Fetch training data - use longer history for stable sequence learning
         data_period = history_period or asset_config.get('history_period', '5y')
@@ -665,9 +631,9 @@ class AssetAwareTrainer:
 
         # Train model
         params = asset_config['model_params']
-        symbol_key = artifact_paths['symbol_key']
-        asset_model_key = artifact_paths['asset_model_key']
-        best_checkpoint_path = artifact_paths['best_checkpoint_path']
+        symbol_key = symbol.replace('.', '_').replace('^', 'INDEX_')
+        asset_model_key = f"{model_type}_{asset_type}_{symbol_key}"
+        best_checkpoint_path = os.path.join(MODEL_DIR, f"{asset_model_key}_best.keras")
 
         # ── Callbacks ─────────────────────────────────────────────────────────
         # Early stopping with generous patience — let models fully converge.
@@ -686,18 +652,6 @@ class AssetAwareTrainer:
             save_weights_only=False, verbose=0,
         )
         eta_callback = self.TrainingEtaCallback(total_epochs=params['epochs'])
-        os.makedirs(artifact_paths['backup_dir'], exist_ok=True)
-        try:
-            backup_restore = tf.keras.callbacks.BackupAndRestore(
-                backup_dir=artifact_paths['backup_dir'],
-                save_freq='epoch',
-                delete_checkpoint=False,
-            )
-        except TypeError:
-            backup_restore = tf.keras.callbacks.BackupAndRestore(
-                backup_dir=artifact_paths['backup_dir'],
-                save_freq='epoch',
-            )
 
         # LR warmup callback for Transformer — linearly ramp from LR/10 to LR
         # over the first warmup_epochs. Prevents attention-weight collapse early on.
@@ -709,15 +663,9 @@ class AssetAwareTrainer:
             def on_epoch_begin(self, epoch, logs=None):
                 if epoch < self.warmup_epochs:
                     lr = self.base_lr * (epoch + 1) / self.warmup_epochs
-                    optimizer = self.model.optimizer
-                    # Keras/TensorFlow can expose LR as a Variable, float, or schedule-like object.
-                    # Prefer assign() when available and fall back to direct property assignment.
-                    if hasattr(optimizer.learning_rate, "assign"):
-                        optimizer.learning_rate.assign(lr)
-                    else:
-                        optimizer.learning_rate = lr
+                    tf.keras.backend.set_value(self.model.optimizer.learning_rate, lr)
 
-        callbacks = [backup_restore, early_stop, checkpoint, eta_callback]
+        callbacks = [early_stop, checkpoint, eta_callback]
         if model_type.lower() == "transformer":
             warmup_cb = WarmupCallback(
                 base_lr=params['learning_rate'],
@@ -735,25 +683,18 @@ class AssetAwareTrainer:
         print(f"[INFO] Starting {model_type.upper()} training ({params['epochs']} epochs, "
               f"batch={params['batch_size']}, lr={params['learning_rate']}, "
               f"clipnorm={params['clip_norm']})...")
-        if os.listdir(artifact_paths['backup_dir']):
-            print(f"[INFO] Found existing backup state for {asset_model_key}; resuming interrupted fit.")
 
         # shuffle=True: sequences are already independent windows; shuffling them
         # at the batch level removes temporal autocorrelation bias from SGD updates.
-        try:
-            history = model.fit(
-                X_train_seq, y_train_seq,
-                epochs=params['epochs'],
-                batch_size=params['batch_size'],
-                validation_data=(X_val_seq, y_val_seq),
-                callbacks=callbacks,
-                shuffle=True,   # shuffle sequence windows — correct for both models
-                verbose=1
-            )
-        except Exception as exc:
-            print(f"[ERROR] Training interrupted for {symbol} ({model_type}): {exc}")
-            print(f"[INFO] Resume state retained at {artifact_paths['backup_dir']}")
-            return False
+        history = model.fit(
+            X_train_seq, y_train_seq,
+            epochs=params['epochs'],
+            batch_size=params['batch_size'],
+            validation_data=(X_val_seq, y_val_seq),
+            callbacks=callbacks,
+            shuffle=True,   # shuffle sequence windows — correct for both models
+            verbose=1
+        )
 
         # Evaluate on strict holdout test split
         print("\n[INFO] Evaluating holdout test split...")
@@ -802,15 +743,19 @@ class AssetAwareTrainer:
         print(f"[INFO] Flat-day ratio in holdout: {flat_day_ratio:.2f}%")
 
         # Save model and scalers with asset-specific naming
-        model_path = artifact_paths['model_path']
-        feature_scaler_path = artifact_paths['feature_scaler_path']
-        target_scaler_path = artifact_paths['target_scaler_path']
-
+        model_filename = f"{asset_model_key}_model.keras"
+        feature_scaler_filename = f"feature_scaler_{asset_type}_{symbol_key}.pkl"
+        target_scaler_filename = f"target_scaler_{asset_type}_{symbol_key}.pkl"
+        
+        model_path = os.path.join(MODEL_DIR, model_filename)
+        feature_scaler_path = os.path.join(MODEL_DIR, feature_scaler_filename)
+        target_scaler_path = os.path.join(MODEL_DIR, target_scaler_filename)
+        
         model.save(model_path)
         joblib.dump(feature_scaler, feature_scaler_path)
         joblib.dump(target_scaler, target_scaler_path)
-
-        print(f"[INFO] ✅ {model_type.upper()} model saved: {os.path.basename(model_path)}")
+        
+        print(f"[INFO] ✅ {model_type.upper()} model saved: {model_filename}")
         print(f"[INFO] ✅ Scalers saved for {symbol}")
 
         # Save detailed evaluation artifacts for reporting and Colab analysis.
@@ -823,7 +768,7 @@ class AssetAwareTrainer:
             'abs_error': np.abs(actual_prices - test_pred),
             'naive_abs_error': np.abs(actual_prices - naive_pred),
         })
-        evaluation_csv_path = artifact_paths['evaluation_csv_path']
+        evaluation_csv_path = os.path.join(MODEL_DIR, f"evaluation_{asset_model_key}.csv")
         eval_rows.to_csv(evaluation_csv_path, index=False)
 
         # Save training metadata
@@ -866,11 +811,14 @@ class AssetAwareTrainer:
             }
         }
 
-        metadata_path = artifact_paths['metadata_path']
+        metadata_path = os.path.join(
+            MODEL_DIR,
+            f"metadata_{model_type}_{asset_type}_{symbol.replace('.', '_').replace('^', 'INDEX_')}.json"
+        )
         with open(metadata_path, 'w') as f:
             json.dump(metadata, f, indent=2)
 
-        metrics_path = artifact_paths['metrics_path']
+        metrics_path = os.path.join(MODEL_DIR, f"metrics_{asset_model_key}.json")
         with open(metrics_path, 'w') as f:
             json.dump(
                 {
@@ -912,10 +860,6 @@ class AssetAwareTrainer:
     def train_all_assets(self, model="both", history_period=None, sequence_length=None, init_from_global=False):
         """Train selected models for all defined assets."""
         all_symbols = STOCK_SYMBOLS + INDEX_SYMBOLS
-        summary = {
-            'lstm': {'ok': 0, 'failed': 0},
-            'transformer': {'ok': 0, 'failed': 0},
-        }
         
         for symbol in all_symbols:
             print(f"\n{'='*60}")
@@ -926,43 +870,27 @@ class AssetAwareTrainer:
             transformer_success = True
 
             if model in ["lstm", "both"]:
-                try:
-                    lstm_success = self.train_asset_specific_model(
-                        symbol,
-                        "lstm",
-                        history_period=history_period,
-                        sequence_length=sequence_length,
-                        init_from_global=init_from_global,
-                    )
-                except Exception as exc:
-                    lstm_success = False
-                    print(f"[ERROR] LSTM failed for {symbol}: {exc}")
-                summary['lstm']['ok' if lstm_success else 'failed'] += 1
+                lstm_success = self.train_asset_specific_model(
+                    symbol,
+                    "lstm",
+                    history_period=history_period,
+                    sequence_length=sequence_length,
+                    init_from_global=init_from_global,
+                )
 
             if model in ["transformer", "both"]:
-                try:
-                    transformer_success = self.train_asset_specific_model(
-                        symbol,
-                        "transformer",
-                        history_period=history_period,
-                        sequence_length=sequence_length,
-                        init_from_global=False,
-                    )
-                except Exception as exc:
-                    transformer_success = False
-                    print(f"[ERROR] Transformer failed for {symbol}: {exc}")
-                summary['transformer']['ok' if transformer_success else 'failed'] += 1
+                transformer_success = self.train_asset_specific_model(
+                    symbol,
+                    "transformer",
+                    history_period=history_period,
+                    sequence_length=sequence_length,
+                    init_from_global=False,
+                )
 
             if lstm_success and transformer_success:
                 print(f"[SUCCESS] ✅ Requested models trained successfully for {symbol}")
             else:
                 print(f"[WARNING] ⚠️ Some requested models failed for {symbol}")
-
-        print("\n[INFO] Training summary:")
-        if model in ["lstm", "both"]:
-            print(f"[INFO] LSTM      - ok: {summary['lstm']['ok']}, failed: {summary['lstm']['failed']}")
-        if model in ["transformer", "both"]:
-            print(f"[INFO] Transformer - ok: {summary['transformer']['ok']}, failed: {summary['transformer']['failed']}")
 
 if __name__ == "__main__":
     import argparse
