@@ -1,7 +1,10 @@
 import os
 import sys
 import re
+import io
 import json
+import zipfile
+import tempfile
 import numpy as np
 import pandas as pd
 import joblib
@@ -43,6 +46,68 @@ INDEX_SYMBOLS = [
     "^NSEI", "^NSEBANK", "^NSEMDCP50", "^CNXAUTO"
 ]
 
+
+# ---------------------------------------------------------------------------
+# Keras version-compatible model loader
+# Models were saved in a different Keras minor version that included
+# 'renorm' (BatchNormalization) and 'use_gate' (MultiHeadAttention) kwargs
+# that no longer exist. We patch the config.json inside the .keras zip before
+# loading so Keras doesn't reject the files.
+# ---------------------------------------------------------------------------
+def _strip_compat_keys(cfg):
+    """Recursively strip version-specific layer kwargs from a config dict."""
+    if isinstance(cfg, dict):
+        inner = cfg.get("config", {})
+        cls = cfg.get("class_name", "")
+        if cls == "BatchNormalization":
+            for k in ("renorm", "renorm_clipping", "renorm_momentum"):
+                inner.pop(k, None)
+        if cls == "MultiHeadAttention":
+            inner.pop("use_gate", None)
+        for v in cfg.values():
+            _strip_compat_keys(v)
+    elif isinstance(cfg, list):
+        for item in cfg:
+            _strip_compat_keys(item)
+
+
+def _load_keras_model(path: str):
+    """
+    Load a .keras model robustly across Keras minor version differences.
+    Fast path: direct load. Fallback: patch config.json inside the zip.
+    """
+    # Fast path — works when Keras versions match exactly
+    try:
+        return tf.keras.models.load_model(path, compile=False)
+    except Exception:
+        pass
+
+    # Fallback: open the .keras zip, strip incompatible keys, reload
+    try:
+        buf = io.BytesIO()
+        with zipfile.ZipFile(path, "r") as zin, \
+             zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zout:
+            for item in zin.infolist():
+                fname = item.filename
+                data = zin.read(fname)
+                if fname == "config.json":
+                    cfg = json.loads(data.decode("utf-8"))
+                    _strip_compat_keys(cfg)
+                    data = json.dumps(cfg).encode("utf-8")
+                zout.writestr(item, data)
+
+        buf.seek(0)
+        tmp = tempfile.NamedTemporaryFile(suffix=".keras", delete=False)
+        tmp.write(buf.read())
+        tmp.close()
+        try:
+            model = tf.keras.models.load_model(tmp.name, compile=False)
+        finally:
+            os.unlink(tmp.name)
+        return model
+    except Exception as e:
+        raise RuntimeError(f"Failed to load model from {path}: {e}") from e
+
 class AssetAwarePredictor:
     def __init__(self):
         self.nse_fetcher = NSEDataFetcher()
@@ -53,13 +118,13 @@ class AssetAwarePredictor:
         # Asset type configurations for validation
         self.asset_configs = {
             'stocks': {
-                'price_range': (100, 5000),
-                'max_prediction_deviation': 0.3,  # 30% max deviation from current price
+                'price_range': (50, 15000),       # wide enough for HDFC/Airtel/Adani
+                'max_prediction_deviation': 0.3,
                 'sequence_length': 120
             },
             'indices': {
-                'price_range': (10000, 60000), 
-                'max_prediction_deviation': 0.15,  
+                'price_range': (5000, 100000),    # covers Nifty to BankNifty
+                'max_prediction_deviation': 0.15,
                 'sequence_length': 120
             }
         }
@@ -116,8 +181,8 @@ class AssetAwarePredictor:
             # Check if required model artifacts exist
             if all(os.path.exists(path) for path in required_paths):
                 print(f"[INFO] Loading asset-specific {model_type} model for {symbol}")
-                
-                model = tf.keras.models.load_model(paths['model'])
+
+                model = _load_keras_model(paths['model'])
                 feature_scaler = joblib.load(paths['feature_scaler'])
                 target_scaler = joblib.load(paths['target_scaler'])
 
@@ -157,7 +222,7 @@ class AssetAwarePredictor:
             target_scaler_path = os.path.join(MODEL_DIR, "target_scaler_improved.pkl")
             
             if all(os.path.exists(path) for path in [model_path, feature_scaler_path, target_scaler_path]):
-                model = tf.keras.models.load_model(model_path)
+                model = _load_keras_model(model_path)
                 feature_scaler = joblib.load(feature_scaler_path)
                 target_scaler = joblib.load(target_scaler_path)
                 
@@ -210,7 +275,7 @@ class AssetAwarePredictor:
                 end_date=end_date,
                 use_cache=True,
             )
-            df['news_sentiment'] = dates.strftime('%Y-%m-%d').map(daily_sentiment).fillna(0.0).astype(float)
+            df['news_sentiment'] = dates.dt.strftime('%Y-%m-%d').map(daily_sentiment).fillna(0.0).astype(float)
         else:
             df['news_sentiment'] = 0.0
 

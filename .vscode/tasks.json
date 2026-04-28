@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run fresh inference",
+			"type": "shell",
+			"command": "d:/major-project/.venv/Scripts/python.exe",
+			"args": [
+				"backend/stockproject/predictor/fresh_inference.py"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		}
+	]
+}
