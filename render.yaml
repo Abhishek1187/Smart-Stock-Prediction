@@ -1,0 +1,35 @@
+databases:
+  - name: time-series-system-db
+    plan: free
+    databaseName: stockproject
+    user: stockproject
+
+services:
+  - type: web
+    name: time-series-system-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /predict/health/
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        sync: false # set to the assigned onrender.com domain after first deploy
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: "False"
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false # set to the Vercel frontend URL
+      - key: DATABASE_URL
+        fromDatabase:
+          name: time-series-system-db
+          property: connectionString
+      - key: NEWS_API_KEY
+        sync: false
+      - key: GNEWS_API_KEY
+        sync: false
+      - key: TWELVEDATA_API_KEY
+        sync: false

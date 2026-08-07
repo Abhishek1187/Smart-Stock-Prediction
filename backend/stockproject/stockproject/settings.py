@@ -14,20 +14,29 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@@xtz^g5--&%h6iz7&^4ohbzat4u&z(7(dj(jj@lqdm7l(1i2o'
+# `or` (not the os.getenv default arg) so a present-but-blank env var - e.g.
+# an unfilled SECRET_KEY= line in .env - still falls back to the dev default,
+# since os.getenv's default only applies when the variable is unset.
+SECRET_KEY = os.getenv('SECRET_KEY') or 'django-insecure-@@xtz^g5--&%h6iz7&^4ohbzat4u&z(7(dj(jj@lqdm7l(1i2o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = (os.getenv('DEBUG') or 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    h.strip() for h in (os.getenv('ALLOWED_HOSTS') or 'localhost,127.0.0.1').split(',') if h.strip()
+]
 
 
 # Application definition
@@ -48,6 +57,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -56,7 +66,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = (os.getenv('CORS_ALLOW_ALL_ORIGINS') or 'True') == 'True'
+CORS_ALLOWED_ORIGINS = [
+    o.strip() for o in (os.getenv('CORS_ALLOWED_ORIGINS') or '').split(',') if o.strip()
+]
 
 ROOT_URLCONF = 'stockproject.urls'
 
@@ -152,6 +165,17 @@ STATICFILES_DIRS = [
     BASE_DIR / 'predictor' / 'static',
 ]
 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -172,4 +196,50 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/min',
+    },
 }
+
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+# Security hardening (only enforced in production; local dev over plain HTTP is unaffected).
+# SECURE_SSL_REDIRECT is separately overridable because CI runs DEBUG=False
+# tests over plain HTTP (no TLS-terminating proxy in front of the test
+# client), where a forced redirect would turn every 200 into a 301.
+if not DEBUG:
+    SECURE_SSL_REDIRECT = (os.getenv('SECURE_SSL_REDIRECT') or 'True') == 'True'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+    # The hosting platform (e.g. Render) terminates TLS at its edge and proxies
+    # plain HTTP to the container; without this, SECURE_SSL_REDIRECT would
+    # redirect-loop.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

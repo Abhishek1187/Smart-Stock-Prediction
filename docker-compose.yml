@@ -1,0 +1,50 @@
+name: time-series-system
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: time-series-system-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: stockproject
+      POSTGRES_USER: stockproject
+      POSTGRES_PASSWORD: stockproject
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stockproject"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: time-series-system-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/stockproject/.env
+    environment:
+      DATABASE_URL: postgresql://stockproject:stockproject@db:5432/stockproject
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:${BACKEND_PORT:-8000}
+    container_name: time-series-system-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+
+volumes:
+  postgres_data:

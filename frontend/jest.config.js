@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   transform: {
     '^.+\\.[jt]sx?$': 'babel-jest',
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',

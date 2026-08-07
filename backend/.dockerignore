@@ -1,0 +1,36 @@
+# Python artifacts
+**/__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Local secrets / env
+.env
+.env.*
+!.env.example
+
+# Local DB and generated static files (built fresh in the image)
+stockproject/db.sqlite3
+*.sqlite3
+stockproject/staticfiles/
+
+# VCS / editor / stray artifacts
+.git
+.gitignore
+node_modules/
+package-lock.json
+*.ipynb
+
+# Non-runtime ML artifacts: only .keras / .pkl / metadata .json under
+# predictor/models are needed to serve predictions.
+stockproject/predictor/models/training_backups/
+stockproject/predictor/models/*.csv
+stockproject/predictor/models/*.pdf
+stockproject/predictor/visualizations/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.log

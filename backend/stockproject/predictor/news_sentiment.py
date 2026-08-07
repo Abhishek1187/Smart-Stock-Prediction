@@ -10,11 +10,11 @@ from pathlib import Path
 import pandas as pd
 
 # NewsAPI configuration
-NEWS_API_KEY = os.getenv("NEWS_API_KEY", "144036cfedee4e678875c0e2ea5bd16c")
+NEWS_API_KEY = os.getenv("NEWS_API_KEY", "")
 NEWS_API_ENDPOINT = "https://newsapi.org/v2/everything"
 
 # GNews API configuration
-GNEWS_API_KEY = os.getenv("GNEWS_API_KEY", "3f95c7a0d831aee6463a767c85c35739")
+GNEWS_API_KEY = os.getenv("GNEWS_API_KEY", "")
 GNEWS_API_ENDPOINT = "https://gnews.io/api/v4/search"
 
 NEWS_API_DISABLED = False
