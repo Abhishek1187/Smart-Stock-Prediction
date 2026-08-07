@@ -23,7 +23,7 @@ pytz>=2023.3
 requests>=2.31.0
 
 # NLP / Sentiment Analysis
-textblob>=0.17.1
+textblob>=0.20.1
 
 # Production DB and scheduling
 psycopg2-binary>=2.9.9
